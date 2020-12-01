@@ -1,5 +1,7 @@
+use std::collections::BTreeSet;
+
 fn main() {
-    let input = vec![
+    let values = vec![
         1686, 1337, 1780, 1305, 1341, 1120, 1197, 1786, 1819, 1414, 1714, 1232, 1672, 1617, 817,
         1665, 1603, 1063, 2007, 1609, 2008, 1878, 1660, 1834, 1901, 323, 1321, 1380, 1598, 1938,
         1575, 502, 2010, 1470, 1902, 1779, 1081, 1535, 2002, 1168, 1702, 1973, 1866, 1115, 1774,
@@ -15,8 +17,8 @@ fn main() {
         1793, 1292, 1698, 1624, 1335, 1264, 1827, 1874, 1725, 1378, 1083, 1173, 1923, 1842, 1207,
         1614, 1425, 1794, 1404, 1862,
     ];
-    let inverse: Vec<i32> = input.iter().map(|val| 2020 - val).collect();
-    match input.iter().find(|&&x| inverse.contains(&x)) {
+    let inverses: BTreeSet<i32> = values.iter().map(|val| 2020 - val).collect();
+    match values.iter().find(|&&x| inverses.contains(&x)) {
         None => println!("Nothing found!"),
         Some(inverse_val) => {
             let val = 2020 - inverse_val;
