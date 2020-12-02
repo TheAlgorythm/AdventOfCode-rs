@@ -32,12 +32,7 @@ impl PasswordPolicy {
             .filter(|character| *character == self.search_character)
             .count();
 
-        if search_character_count < self.first_constraint
-            || search_character_count > self.second_constraint
-        {
-            return false;
-        }
-        true
+        (self.first_constraint..=self.second_constraint).contains(&search_character_count)
     }
 
     fn check_suggestion_part_two(&self) -> bool {
