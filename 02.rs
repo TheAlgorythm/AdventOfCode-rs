@@ -36,13 +36,9 @@ impl PasswordPolicy {
     }
 
     fn check_suggestion_part_two(&self) -> bool {
-        if (self.suggestion.chars().nth(self.first_constraint - 1) != Some(self.search_character))
+        (self.suggestion.chars().nth(self.first_constraint - 1) == Some(self.search_character))
             != (self.suggestion.chars().nth(self.second_constraint - 1)
                 == Some(self.search_character))
-        {
-            return false;
-        }
-        true
     }
 }
 
