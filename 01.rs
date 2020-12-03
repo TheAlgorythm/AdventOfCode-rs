@@ -1,5 +1,35 @@
 use std::collections::BTreeSet;
 
+fn solve_part_one(values: &Vec<u32>, inverses: &BTreeSet<u32>) {
+    match values.iter().find(|&&val| inverses.contains(&val)) {
+        None => println!("Nothing found!"),
+        Some(inverse_val) => {
+            let val = 2020 - inverse_val;
+            let product = val * inverse_val;
+            println!("{} * {} = {}", val, inverse_val, product);
+        }
+    }
+}
+
+fn solve_part_two(values: &Vec<u32>, inverses: &BTreeSet<u32>) {
+    match values
+        .iter()
+        .map(|val| vec![val].into_iter().cycle().zip(values.iter()))
+        .flatten()
+        .find(|(first_val, second_val)| inverses.contains(&(*first_val + *second_val)))
+    {
+        None => println!("Nothing found!"),
+        Some((first_val, second_val)) => {
+            let inverse_val = 2020 - (first_val + second_val);
+            let product = first_val * second_val * inverse_val;
+            println!(
+                "{} * {} * {} = {}",
+                first_val, second_val, inverse_val, product
+            );
+        }
+    }
+}
+
 fn main() {
     let values = vec![
         1686, 1337, 1780, 1305, 1341, 1120, 1197, 1786, 1819, 1414, 1714, 1232, 1672, 1617, 817,
@@ -17,13 +47,8 @@ fn main() {
         1793, 1292, 1698, 1624, 1335, 1264, 1827, 1874, 1725, 1378, 1083, 1173, 1923, 1842, 1207,
         1614, 1425, 1794, 1404, 1862,
     ];
-    let inverses: BTreeSet<i32> = values.iter().map(|val| 2020 - val).collect();
-    match values.iter().find(|&&x| inverses.contains(&x)) {
-        None => println!("Nothing found!"),
-        Some(inverse_val) => {
-            let val = 2020 - inverse_val;
-            let product = val * inverse_val;
-            println!("{} * {} = {}", val, inverse_val, product);
-        }
-    }
+    let inverses: BTreeSet<u32> = values.iter().map(|val| 2020 - val).collect();
+
+    solve_part_one(&values, &inverses);
+    solve_part_two(&values, &inverses);
 }
