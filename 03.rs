@@ -29,11 +29,7 @@ impl Iterator for RingAdder {
     }
 }
 
-fn main() -> std::io::Result<()> {
-    let file = File::open("03_data.map")?;
-    let reader = BufReader::new(file);
-    let slope_map: Vec<String> = reader.lines().collect::<std::io::Result<Vec<String>>>()?;
-
+fn solve_part_one(slope_map: &Vec<String>) {
     let mut x_coords_ring = RingAdder::new(0, 3, 31);
 
     let trees_on_slope = slope_map
@@ -47,7 +43,9 @@ fn main() -> std::io::Result<()> {
         .count();
 
     println!("There are {} trees on the slope.", trees_on_slope);
+}
 
+fn solve_part_two(slope_map: &Vec<String>) {
     let slopes = vec![
         (1, RingAdder::new(0, 1, 31)),
         (1, RingAdder::new(0, 3, 31)),
@@ -73,6 +71,15 @@ fn main() -> std::io::Result<()> {
         .product();
 
     println!("The slope-product is {},", slope_product);
+}
+
+fn main() -> std::io::Result<()> {
+    let file = File::open("03_data.map")?;
+    let reader = BufReader::new(file);
+    let slope_map: Vec<String> = reader.lines().collect::<std::io::Result<Vec<String>>>()?;
+
+    solve_part_one(&slope_map);
+    solve_part_two(&slope_map);
 
     Ok(())
 }
