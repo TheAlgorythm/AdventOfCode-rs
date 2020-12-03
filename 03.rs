@@ -29,16 +29,18 @@ impl Iterator for RingAdder {
     }
 }
 
+fn position(line: &String, x_coords: &mut RingAdder) -> char {
+    line.chars()
+        .nth(x_coords.next().unwrap() as usize)
+        .expect("Index out of range")
+}
+
 fn solve_part_one(slope_map: &Vec<String>) {
     let mut x_coords_ring = RingAdder::new(0, 3, 31);
 
     let trees_on_slope = slope_map
         .iter()
-        .map(|line| {
-            line.chars()
-                .nth(x_coords_ring.next().unwrap() as usize)
-                .expect("Index out of range")
-        })
+        .map(|line| position(line, &mut x_coords_ring))
         .filter(|symbol| *symbol == '#')
         .count();
 
@@ -60,11 +62,7 @@ fn solve_part_two(slope_map: &Vec<String>) {
             slope_map
                 .iter()
                 .step_by(y_slope)
-                .map(|line| {
-                    line.chars()
-                        .nth(x_slope.next().unwrap() as usize)
-                        .expect("Index out of range")
-                })
+                .map(|line| position(line, &mut x_slope))
                 .filter(|symbol| *symbol == '#')
                 .count() as u64
         })
