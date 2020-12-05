@@ -4,8 +4,8 @@ use std::ops::Sub;
 use std::str::FromStr;
 
 struct SeatPosition {
-    row: u32,
-    column: u32,
+    pub row: u32,
+    pub column: u32,
 }
 
 impl SeatPosition {
@@ -90,7 +90,12 @@ fn solve_part_two(seats: &Vec<SeatPosition>) {
         .map(|(_distance, seat)| seat - 1_u32)
         .next()
         .expect("No free seat!");
-    println!("My seat {} is in row  column .", my_seat.get_id());
+    println!(
+        "My seat {} is in row {} column {}.",
+        my_seat.get_id(),
+        my_seat.row,
+        my_seat.column
+    );
 }
 
 fn main() {
