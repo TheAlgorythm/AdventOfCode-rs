@@ -34,13 +34,13 @@ fn check_valid_values(passport: &HashMap<&str, &str>) -> bool {
     ) && (2010..=2020).contains(
         &passport
             .get("iyr")
-            .expect("No byr-field!")
+            .expect("No iyr-field!")
             .parse::<i32>()
             .unwrap_or(0),
     ) && (2020..=2030).contains(
         &passport
             .get("eyr")
-            .expect("No iyr-field!")
+            .expect("No eyr-field!")
             .parse::<i32>()
             .unwrap_or(0),
     ) && {
