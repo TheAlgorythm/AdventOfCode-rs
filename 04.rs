@@ -24,58 +24,66 @@ fn check_valid_keys(passport: &HashMap<&str, &str>) -> bool {
         .all(|key| passport.contains_key(key))
 }
 
-fn check_valid_values(passport: &HashMap<&str, &str>) -> bool {
-    (1920..=2002).contains(
+fn check_range(passport: &HashMap<&str, &str>, field: &str, from: i32, to: i32) -> bool {
+    (from..=to).contains(
         &passport
-            .get("byr")
-            .expect("No byr-field!")
+            .get(field)
+            .expect(format!("No {}-field!", field).as_str())
             .parse::<i32>()
             .unwrap_or(0),
-    ) && (2010..=2020).contains(
-        &passport
-            .get("iyr")
-            .expect("No iyr-field!")
-            .parse::<i32>()
-            .unwrap_or(0),
-    ) && (2020..=2030).contains(
-        &passport
-            .get("eyr")
-            .expect("No eyr-field!")
-            .parse::<i32>()
-            .unwrap_or(0),
-    ) && {
-        let height_item = passport.get("hgt").expect("No hgt-field!");
-        match &height_item[height_item.len() - 2..] {
-            "cm" => (150..=193).contains(
-                &height_item[..height_item.len() - 2]
-                    .parse::<i32>()
-                    .unwrap_or(0),
-            ),
-            "in" => (59..=76).contains(
-                &height_item[..height_item.len() - 2]
-                    .parse::<i32>()
-                    .unwrap_or(0),
-            ),
-            _ => false,
-        }
-    } && {
-        let hair_color_item = passport.get("hcl").expect("No hcl-field!");
-        hair_color_item.len() == 7
-            && hair_color_item.starts_with('#')
-            && hair_color_item
-                .chars()
-                .skip(1)
-                .all(|digit| char::is_ascii_hexdigit(&digit))
-    } && match *passport.get("ecl").expect("No ecl-field!") {
+    )
+}
+
+fn check_height(passport: &HashMap<&str, &str>) -> bool {
+    let height_item = passport.get("hgt").expect("No hgt-field!");
+    match &height_item[height_item.len() - 2..] {
+        "cm" => (150..=193).contains(
+            &height_item[..height_item.len() - 2]
+                .parse::<i32>()
+                .unwrap_or(0),
+        ),
+        "in" => (59..=76).contains(
+            &height_item[..height_item.len() - 2]
+                .parse::<i32>()
+                .unwrap_or(0),
+        ),
+        _ => false,
+    }
+}
+
+fn check_hair_color(passport: &HashMap<&str, &str>) -> bool {
+    let hair_color_item = passport.get("hcl").expect("No hcl-field!");
+    hair_color_item.len() == 7
+        && hair_color_item.starts_with('#')
+        && hair_color_item
+            .chars()
+            .skip(1)
+            .all(|digit| char::is_ascii_hexdigit(&digit))
+}
+
+fn check_eye_color(passport: &HashMap<&str, &str>) -> bool {
+    match *passport.get("ecl").expect("No ecl-field!") {
         "amb" | "blu" | "brn" | "gry" | "grn" | "hzl" | "oth" => true,
         _ => false,
-    } && {
-        let pass_id_item = passport.get("pid").expect("No pid-field!");
-        pass_id_item.len() == 9
-            && pass_id_item
-                .chars()
-                .all(|digit| char::is_ascii_digit(&digit))
     }
+}
+
+fn check_pass_id(passport: &HashMap<&str, &str>) -> bool {
+    let pass_id_item = passport.get("pid").expect("No pid-field!");
+    pass_id_item.len() == 9
+        && pass_id_item
+            .chars()
+            .all(|digit| char::is_ascii_digit(&digit))
+}
+
+fn check_valid_values(passport: &HashMap<&str, &str>) -> bool {
+    check_range(&passport, "byr", 1920, 2002)
+        && check_range(&passport, "iyr", 2010, 2020)
+        && check_range(&passport, "eyr", 2020, 2030)
+        && check_height(&passport)
+        && check_hair_color(&passport)
+        && check_eye_color(&passport)
+        && check_pass_id(&passport)
 }
 
 fn solve_part_one(passports: &Vec<HashMap<&str, &str>>) {
