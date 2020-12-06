@@ -1,5 +1,4 @@
 use std::collections::BTreeSet;
-use std::hash::Hash;
 
 struct Unique<I>
 where
@@ -12,7 +11,7 @@ where
 impl<I> Iterator for Unique<I>
 where
     I: Iterator,
-    I::Item: Hash + Eq + std::cmp::Ord + Clone,
+    I::Item: Ord + Clone,
 {
     type Item = I::Item;
 
@@ -30,7 +29,7 @@ where
 trait UniqueExt: Iterator {
     fn unique(self) -> Unique<Self>
     where
-        Self::Item: Hash + Eq + std::cmp::Ord + Clone,
+        Self::Item: Ord + Clone,
         Self: Sized,
     {
         Unique {
