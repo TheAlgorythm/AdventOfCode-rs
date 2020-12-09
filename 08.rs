@@ -138,7 +138,6 @@ fn solve_part_two(res: &Result<i64, RuntimeError>, instructions: &Vec<Instructio
         ),
         Err(_) => println!("There is no way of stopping the infinite loop!"),
     }
-    // println!("The total answers count summed up is {}.", answer_count_sum);
 }
 
 fn main() -> Result<(), ParseInstructionError> {
