@@ -44,10 +44,8 @@ fn count_mutations(adapters: &[u64], last_value: u64, cache: &mut BTreeMap<u64, 
         return 1;
     }
 
-    let following_adapters = &adapters[1..];
-
-    let mutations = count_mutations(&following_adapters, adapters[0], cache)
-        + count_mutations(&following_adapters, last_value, cache);
+    let mutations = count_mutations(&adapters[1..], adapters[0], cache)
+        + count_mutations(&adapters[1..], last_value, cache);
     cache.insert(last_value, mutations);
     mutations
 }
