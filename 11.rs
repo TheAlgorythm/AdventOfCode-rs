@@ -28,10 +28,8 @@ impl PositionState {
         disallowed_occupied: u32,
         stabilized: &mut bool,
     ) -> Self {
-        if !self.is_seat() {
-            return PositionState::Floor;
-        }
         match self {
+            PositionState::Floor => PositionState::Floor,
             PositionState::Empty => {
                 if occupied_count == 0 {
                     *stabilized = false;
@@ -48,7 +46,6 @@ impl PositionState {
                     PositionState::Occupied
                 }
             }
-            _ => unreachable!(),
         }
     }
 }
