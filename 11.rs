@@ -1,3 +1,5 @@
+type Map = Vec<Vec<PositionState>>;
+
 #[derive(Clone, Debug)]
 enum PositionState {
     Floor,
@@ -13,41 +15,34 @@ impl PositionState {
         }
     }
 
+    pub fn is_seat(&self) -> bool {
+        match self {
+            PositionState::Floor => false,
+            _ => true,
+        }
+    }
+
     pub fn calculate_new(
         &self,
-        map: &Map,
-        line_index: usize,
-        column_index: usize,
-        value_changed: &mut bool,
+        occupied_count: u32,
+        disallowed_occupied: u32,
+        stabilized: &mut bool,
     ) -> Self {
-        match self {
-            PositionState::Floor => return PositionState::Floor,
-            _ => {}
-        };
-        let neighborhood_occupied_count: usize = map
-            .iter()
-            .skip(get_first_border(line_index))
-            .take(get_width(line_index, map.len()))
-            .map(|line| {
-                line.iter()
-                    .skip(get_first_border(column_index))
-                    .take(get_width(column_index, line.len()))
-                    .filter(|state| state.is_occupied())
-                    .count()
-            })
-            .sum();
+        if !self.is_seat() {
+            return PositionState::Floor;
+        }
         match self {
             PositionState::Empty => {
-                if neighborhood_occupied_count == 0 {
-                    *value_changed |= true;
+                if occupied_count == 0 {
+                    *stabilized = false;
                     PositionState::Occupied
                 } else {
                     PositionState::Empty
                 }
             }
             PositionState::Occupied => {
-                if neighborhood_occupied_count >= 5 {
-                    *value_changed |= true;
+                if occupied_count >= disallowed_occupied {
+                    *stabilized = false;
                     PositionState::Empty
                 } else {
                     PositionState::Occupied
@@ -76,6 +71,65 @@ fn get_width(center: usize, size: usize) -> usize {
     default_width
 }
 
+fn count_occupied_neighbors(map: &Map, line_index: usize, column_index: usize) -> u32 {
+    map.iter()
+        .skip(get_first_border(line_index))
+        .take(get_width(line_index, map.len()))
+        .map(|line| {
+            line.iter()
+                .skip(get_first_border(column_index))
+                .take(get_width(column_index, line.len()))
+                .filter(|state| state.is_occupied())
+                .count() as u32
+        })
+        .sum::<u32>()
+        - (map[line_index][column_index].is_occupied() as u32)
+}
+
+fn count_occupied_axis(map: &Map, line_index: usize, column_index: usize) -> u32 {
+    let directions = vec![
+        (0, 1),
+        (1, 1),
+        (1, 0),
+        (1, -1),
+        (0, -1),
+        (-1, -1),
+        (-1, 0),
+        (-1, 1),
+    ];
+    directions
+        .iter()
+        .map(|vector| get_occupied_axis(&map, line_index, column_index, *vector) as u32)
+        .sum()
+}
+
+fn get_occupied_axis(
+    map: &Map,
+    line_index: usize,
+    column_index: usize,
+    vector: (isize, isize),
+) -> bool {
+    match (1..)
+        .map(|n| {
+            (
+                line_index as isize + (vector.0 * n),
+                column_index as isize + (vector.1 * n),
+            )
+        })
+        .take_while(|(line_vector, column_vector)| {
+            (0..map.len() as isize).contains(line_vector)
+                && (0..map[*line_vector as usize].len() as isize).contains(column_vector)
+        })
+        .map(|(line_vector, column_vector)| {
+            map[line_vector as usize][column_vector as usize].clone()
+        })
+        .filter(|state| state.is_seat())
+        .next()
+    {
+        None | Some(PositionState::Empty) => false,
+        _ => true,
+    }
+}
 impl From<char> for PositionState {
     fn from(character: char) -> Self {
         match character {
@@ -87,8 +141,6 @@ impl From<char> for PositionState {
     }
 }
 
-type Map = Vec<Vec<PositionState>>;
-
 fn parse_map(input: &str) -> Map {
     input
         .lines()
@@ -96,41 +148,79 @@ fn parse_map(input: &str) -> Map {
         .collect()
 }
 
-fn seat_behaviour_engine(map: &Map) -> (Map, bool) {
-    let mut value_changed = false;
-    (
-        map.iter()
+struct BehaviourEngine<'a> {
+    map: Map,
+    count_occupied: &'a dyn Fn(&Map, usize, usize) -> u32,
+    disallowed_occupied: u32,
+    stabilized: bool,
+}
+
+impl<'a> BehaviourEngine<'a> {
+    pub fn run_to_stabilized(&mut self) {
+        while !self.stabilized {
+            self.step();
+        }
+    }
+
+    fn step(&mut self) {
+        self.stabilized = true;
+        self.map = self
+            .map
+            .to_vec()
+            .iter()
             .enumerate()
-            .map(|(line_number, line)| {
+            .map(|(line_index, line)| {
                 line.iter()
                     .enumerate()
-                    .map(|(column, state)| {
-                        state.calculate_new(&map, line_number, column, &mut value_changed)
+                    .map(|(column_index, state)| {
+                        state.calculate_new(
+                            (self.count_occupied)(&self.map, line_index, column_index),
+                            self.disallowed_occupied,
+                            &mut self.stabilized,
+                        )
                     })
                     .collect::<Vec<PositionState>>()
             })
-            .collect(),
-        value_changed,
-    )
+            .collect();
+    }
+
+    pub fn get_all_occupied(&self) -> u32 {
+        self.map
+            .iter()
+            .map(|line| line.iter().filter(|state| state.is_occupied()).count() as u32)
+            .sum()
+    }
 }
 
 fn solve_part_one(map: &Map) {
-    let mut old_map = map.to_vec();
-    loop {
-        let (updated_map, value_changed) = seat_behaviour_engine(&old_map);
-        if !value_changed {
-            break;
-        }
-        old_map = updated_map;
-    }
-    let occupied_seats: usize = old_map
-        .iter()
-        .map(|line| line.iter().filter(|state| state.is_occupied()).count())
-        .sum();
-    println!("There end up {} seats occupied.", occupied_seats);
+    let mut engine = BehaviourEngine {
+        map: map.to_vec(),
+        count_occupied: &count_occupied_neighbors,
+        disallowed_occupied: 4,
+        stabilized: false,
+    };
+    engine.run_to_stabilized();
+    let occupied_seats = engine.get_all_occupied();
+    println!(
+        "There end up {} seats occupied (neighbor model).",
+        occupied_seats
+    );
 }
 
-fn solve_part_two(_map: &Map) {}
+fn solve_part_two(map: &Map) {
+    let mut engine = BehaviourEngine {
+        map: map.to_vec(),
+        count_occupied: &count_occupied_axis,
+        disallowed_occupied: 5,
+        stabilized: false,
+    };
+    engine.run_to_stabilized();
+    let occupied_seats = engine.get_all_occupied();
+    println!(
+        "There end up {} seats occupied (axis model).",
+        occupied_seats
+    );
+}
 
 fn main() {
     let input = include_str!("11_data.map");
