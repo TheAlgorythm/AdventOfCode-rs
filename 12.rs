@@ -87,8 +87,7 @@ fn parse_actions(input: &str) -> Result<Vec<Action>, ParseActionError> {
     input.lines().map(str::parse::<Action>).collect()
 }
 
-fn manhattan_distance(actions: &Vec<Action>) -> u32 {
-    let mut current_view = Direction::East;
+fn manhattan_distance(actions: &Vec<Action>, mut current_view: Direction) -> u32 {
     let mut north_distance = 0_i32;
     let mut east_distance = 0_i32;
     for action in actions.iter() {
@@ -110,16 +109,18 @@ fn manhattan_distance(actions: &Vec<Action>) -> u32 {
 }
 
 fn solve_part_one(actions: &Vec<Action>) {
-    let distance = manhattan_distance(&actions);
+    let distance = manhattan_distance(&actions, Direction::East);
     println!(
         "The Manhattan distance between that location and the ship's starting position is {}.",
         distance
     );
 }
 
-fn manhattan_distance_with_waypoints(actions: &Vec<Action>) -> u32 {
-    let mut waypoint_north_coordinate = 1_i32;
-    let mut waypoint_east_coordinate = 10_i32;
+fn manhattan_distance_with_waypoints(
+    actions: &Vec<Action>,
+    mut waypoint_north_coordinate: i32,
+    mut waypoint_east_coordinate: i32,
+) -> u32 {
     let mut north_distance = 0_i32;
     let mut east_distance = 0_i32;
     for action in actions.iter() {
@@ -174,7 +175,7 @@ fn manhattan_distance_with_waypoints(actions: &Vec<Action>) -> u32 {
 }
 
 fn solve_part_two(actions: &Vec<Action>) {
-    let distance = manhattan_distance_with_waypoints(&actions);
+    let distance = manhattan_distance_with_waypoints(&actions, 1, 10);
     println!(
         "The Manhattan distance between that location and the ship's starting position is {} using waypoints.",
         distance
