@@ -2,15 +2,15 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::io::BufReader;
 
-struct RingAdder {
+struct RingAdderSequence {
     next: u64,
     step_width: u64,
     modulus: u64,
 }
 
-impl RingAdder {
+impl RingAdderSequence {
     fn new(start: u64, step_width: u64, modulus: u64) -> Self {
-        RingAdder {
+        RingAdderSequence {
             next: start,
             step_width,
             modulus,
@@ -18,7 +18,7 @@ impl RingAdder {
     }
 }
 
-impl Iterator for RingAdder {
+impl Iterator for RingAdderSequence {
     type Item = u64;
 
     fn next(&mut self) -> Option<u64> {
@@ -29,14 +29,14 @@ impl Iterator for RingAdder {
     }
 }
 
-fn position(line: &String, x_coords: &mut RingAdder) -> char {
+fn position(line: &String, x_coords: &mut RingAdderSequence) -> char {
     line.chars()
         .nth(x_coords.next().unwrap() as usize)
         .expect("Index out of range")
 }
 
 fn solve_part_one(slope_map: &Vec<String>) {
-    let mut x_coords_ring = RingAdder::new(0, 3, 31);
+    let mut x_coords_ring = RingAdderSequence::new(0, 3, 31);
 
     let trees_on_slope = slope_map
         .iter()
@@ -49,11 +49,11 @@ fn solve_part_one(slope_map: &Vec<String>) {
 
 fn solve_part_two(slope_map: &Vec<String>) {
     let slopes = vec![
-        (1, RingAdder::new(0, 1, 31)),
-        (1, RingAdder::new(0, 3, 31)),
-        (1, RingAdder::new(0, 5, 31)),
-        (1, RingAdder::new(0, 7, 31)),
-        (2, RingAdder::new(0, 1, 31)),
+        (1, RingAdderSequence::new(0, 1, 31)),
+        (1, RingAdderSequence::new(0, 3, 31)),
+        (1, RingAdderSequence::new(0, 5, 31)),
+        (1, RingAdderSequence::new(0, 7, 31)),
+        (2, RingAdderSequence::new(0, 1, 31)),
     ];
 
     let slope_product: u64 = slopes
