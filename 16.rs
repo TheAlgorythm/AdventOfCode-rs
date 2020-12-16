@@ -45,6 +45,10 @@ fn parse_ticket_notes(input: &str) -> (Rules, Tickets) {
     (rules, tickets)
 }
 
+fn value_in_ranges(value: &i32, ranges: &Vec<&(i32, i32)>) -> bool {
+    ranges.iter().any(|(min, max)| (min..=max).contains(&value))
+}
+
 fn scanning_error_rate(rules: &Rules, tickets: &Tickets) -> i32 {
     let ranges: Vec<&(i32, i32)> = rules.values().flatten().collect();
     tickets
@@ -52,7 +56,7 @@ fn scanning_error_rate(rules: &Rules, tickets: &Tickets) -> i32 {
         .map(|ticket| {
             ticket
                 .iter()
-                .filter(|value| !ranges.iter().any(|(min, max)| (min..=max).contains(value)))
+                .filter(|value| !value_in_ranges(value, &ranges))
                 .sum::<i32>()
         })
         .sum()
@@ -63,7 +67,74 @@ fn solve_part_one(rules: &Rules, tickets: &Tickets) {
     println!("The scanning error rate is {}.", sum_invalid);
 }
 
-fn solve_part_two() {}
+fn get_labels(rules: &Rules, tickets: &Tickets) -> Vec<String> {
+    let ranges: Vec<&(i32, i32)> = rules.values().flatten().collect();
+    let valid_tickets: Vec<&Vec<i32>> = tickets
+        .iter()
+        .skip(1)
+        .filter(|ticket| ticket.iter().all(|value| value_in_ranges(value, &ranges)))
+        .collect();
+
+    let length_attributes = valid_tickets[0].len();
+    let mut possible_attribute_names = vec![Vec::new(); rules.len()];
+
+    rules.iter().for_each(|(attribute_name, attribute_ranges)| {
+        (0_usize..length_attributes)
+            .filter(|&attribute_index| {
+                valid_tickets.iter().all(|ticket| {
+                    value_in_ranges(
+                        &(**ticket)[attribute_index],
+                        &attribute_ranges.iter().collect(),
+                    )
+                })
+            })
+            .for_each(|attribute_index| {
+                possible_attribute_names[attribute_index].push(attribute_name)
+            });
+    });
+
+    // determine
+    let mut attribute_names = vec![String::new(); rules.len()];
+    while attribute_names
+        .iter()
+        .any(|attribute_name| attribute_name.is_empty())
+    {
+        possible_attribute_names
+            .iter_mut()
+            .enumerate()
+            .filter(|(_attribute_index, possible_names)| possible_names.len() == 1)
+            .for_each(|(attribute_index, possible_names)| {
+                attribute_names[attribute_index] = (*possible_names).pop().unwrap().to_string();
+            });
+        possible_attribute_names
+            .iter_mut()
+            .for_each(|possible_names| {
+                let removing_indexes: Vec<usize> = possible_names
+                    .iter()
+                    .enumerate()
+                    .filter(|(_possible_index, possible_name)| {
+                        attribute_names.contains(possible_name)
+                    })
+                    .map(|(possible_index, _possible_name)| possible_index)
+                    .collect();
+                removing_indexes.iter().for_each(|possible_index| {
+                    possible_names.remove(*possible_index);
+                });
+            });
+    }
+    attribute_names
+}
+
+fn solve_part_two(rules: &Rules, tickets: &Tickets) {
+    let labels = get_labels(&rules, &tickets);
+    let depature_product: i64 = labels
+        .iter()
+        .enumerate()
+        .filter(|(_attribute_index, attribute_name)| attribute_name.starts_with("departure"))
+        .map(|(attribute_index, _attribute_name)| tickets[0][attribute_index] as i64)
+        .product();
+    println!("The departure product is {}.", depature_product);
+}
 
 fn main() {
     let input = include_str!("16_data.txt");
@@ -71,5 +142,5 @@ fn main() {
     let (rules, tickets) = parse_ticket_notes(&input);
 
     solve_part_one(&rules, &tickets);
-    solve_part_two();
+    solve_part_two(&rules, &tickets);
 }
