@@ -41,7 +41,7 @@ impl Position {
             .collect()
     }
 
-    fn get_neighbors(&self, is_4_dimensional: bool) -> Vec<Self> {
+    fn get_neighbors(&self, active_cubes: &HashSet<Self>, is_4_dimensional: bool) -> u32 {
         (-1..=1)
             .map(|x_offset| {
                 (-1..=1)
@@ -63,16 +63,14 @@ impl Position {
                                             self.w + w_offset,
                                         )
                                     })
-                                    .collect::<Vec<Self>>()
+                                    .filter(|neighbor| active_cubes.contains(neighbor))
+                                    .count() as u32
                             })
-                            .flatten()
-                            .collect::<Vec<Self>>()
+                            .sum::<u32>()
                     })
-                    .flatten()
-                    .collect::<Vec<Self>>()
+                    .sum::<u32>()
             })
-            .flatten()
-            .collect()
+            .sum()
     }
 }
 
@@ -99,11 +97,7 @@ fn cycle(active_cubes: &HashSet<Position>, is_4_dimensional: bool) -> HashSet<Po
         .flatten()
         .filter(|possible_cube| {
             let is_active = active_cubes.contains(possible_cube);
-            let neighbors = possible_cube
-                .get_neighbors(is_4_dimensional)
-                .into_iter()
-                .filter(|neighbor| active_cubes.contains(neighbor))
-                .count();
+            let neighbors = possible_cube.get_neighbors(active_cubes, is_4_dimensional);
             match (is_active, neighbors) {
                 (true, 2..=3) => true,
                 (false, 3) => true,
