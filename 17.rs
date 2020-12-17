@@ -1,6 +1,6 @@
-use std::collections::HashSet;
+use std::collections::BTreeSet;
 
-#[derive(Hash, PartialEq, Eq, Clone, Debug)]
+#[derive(Ord, PartialOrd, PartialEq, Eq, Debug)]
 struct Position {
     x: i64,
     y: i64,
@@ -41,7 +41,7 @@ impl Position {
             .collect()
     }
 
-    fn get_neighbors(&self, active_cubes: &HashSet<Self>, is_4_dimensional: bool) -> u32 {
+    fn get_neighbors(&self, active_cubes: &BTreeSet<Self>, is_4_dimensional: bool) -> u32 {
         (-1..=1)
             .map(|x_offset| {
                 (-1..=1)
@@ -74,7 +74,7 @@ impl Position {
     }
 }
 
-fn parse_map(input: &str) -> HashSet<Position> {
+fn parse_map(input: &str) -> BTreeSet<Position> {
     input
         .lines()
         .rev()
@@ -84,13 +84,13 @@ fn parse_map(input: &str) -> HashSet<Position> {
                 .enumerate()
                 .filter(|(_x_index, character)| *character == '#')
                 .map(|(x_index, _char)| Position::new(x_index as i64, y_index as i64, 0, 0))
-                .collect::<HashSet<Position>>()
+                .collect::<BTreeSet<Position>>()
         })
         .flatten()
-        .collect::<HashSet<Position>>()
+        .collect::<BTreeSet<Position>>()
 }
 
-fn cycle(active_cubes: &HashSet<Position>, is_4_dimensional: bool) -> HashSet<Position> {
+fn cycle(active_cubes: &BTreeSet<Position>, is_4_dimensional: bool) -> BTreeSet<Position> {
     active_cubes
         .iter()
         .map(|current_active| current_active.get_block(is_4_dimensional))
@@ -108,10 +108,10 @@ fn cycle(active_cubes: &HashSet<Position>, is_4_dimensional: bool) -> HashSet<Po
 }
 
 fn cycles(
-    active_cubes: &HashSet<Position>,
+    active_cubes: &BTreeSet<Position>,
     nth: usize,
     is_4_dimensional: bool,
-) -> HashSet<Position> {
+) -> BTreeSet<Position> {
     let mut current_active = cycle(&active_cubes, is_4_dimensional);
     for _ in 1..nth {
         current_active = cycle(&current_active, is_4_dimensional);
@@ -119,7 +119,7 @@ fn cycles(
     current_active
 }
 
-fn solve_part_one(active_cubes: &HashSet<Position>) {
+fn solve_part_one(active_cubes: &BTreeSet<Position>) {
     let cubes = cycles(active_cubes, 6, false).len();
     println!(
         "There are {} cubes left in the active state after the sixth cycle.",
@@ -127,7 +127,7 @@ fn solve_part_one(active_cubes: &HashSet<Position>) {
     );
 }
 
-fn solve_part_two(active_cubes: &HashSet<Position>) {
+fn solve_part_two(active_cubes: &BTreeSet<Position>) {
     let cubes = cycles(active_cubes, 6, true).len();
     println!(
         "There are {} cubes left in the active state after the sixth cycle in 4 dimensions.",
