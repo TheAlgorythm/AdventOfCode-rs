@@ -1,6 +1,8 @@
 use std::collections::BTreeSet;
+mod utils;
+use utils::unique::*;
 
-#[derive(Ord, PartialOrd, PartialEq, Eq, Debug)]
+#[derive(Ord, PartialOrd, PartialEq, Eq, Clone, Debug)]
 struct Position {
     x: i64,
     y: i64,
@@ -95,6 +97,7 @@ fn cycle(active_cubes: &BTreeSet<Position>, is_4_dimensional: bool) -> BTreeSet<
         .iter()
         .map(|current_active| current_active.get_block(is_4_dimensional))
         .flatten()
+        .unique()
         .filter(|possible_cube| {
             let is_active = active_cubes.contains(possible_cube);
             let neighbors = possible_cube.get_neighbors(active_cubes, is_4_dimensional);
