@@ -16,8 +16,12 @@ pub fn mod_inverse(x: i64, n: i64) -> i64 {
 pub fn chinese_remainder(pairs: &Vec<(i64, i64)>) -> i64 {
     let product = pairs.iter().map(|(r, _)| r).product::<i64>();
 
-    pairs.iter().fold(0, |acc, (i, j)| {
-        let p = product / i;
-        acc + j * mod_inverse(p, *i) * p
-    }) % product
+    pairs
+        .iter()
+        .map(|(i, j)| {
+            let p = product / i;
+            mod_inverse(j, *i) * p
+        })
+        .sum::<i64>()
+        % product
 }
