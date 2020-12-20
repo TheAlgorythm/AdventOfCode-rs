@@ -1,6 +1,8 @@
 use std::collections::BTreeMap;
 use std::num::ParseIntError;
 use std::str::FromStr;
+mod utils;
+use utils::unique::*;
 
 #[derive(Debug)]
 enum Rule {
@@ -78,6 +80,7 @@ impl Rules {
                         next_paths
                     })
                     .flatten()
+                    .unique()
                     .collect();
             }
         }
