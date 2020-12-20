@@ -20,7 +20,7 @@ pub fn chinese_remainder(pairs: &Vec<(i64, i64)>) -> i64 {
         .iter()
         .map(|(i, j)| {
             let p = product / i;
-            mod_inverse(j, *i) * p
+            j * mod_inverse(p, *i) * p
         })
         .sum::<i64>()
         % product
