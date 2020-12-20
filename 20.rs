@@ -85,6 +85,7 @@ fn get_corner_tiles(tiles: &Tiles) -> Vec<u16> {
                 .filter(|(other_tile_id, other_tile)| {
                     tile_id != other_tile_id && tile.is_adjacent(other_tile)
                 })
+                .take(3)
                 .count()
                 == 2
         })
