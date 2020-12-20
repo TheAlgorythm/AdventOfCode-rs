@@ -44,34 +44,42 @@ struct Rules {
 
 impl Rules {
     pub fn check(&self, message: &str) -> bool {
-        let mut starting_index = 0;
+        let mut paths = vec![0];
 
-        self.check_internal(message, 0, &mut starting_index) && starting_index == message.len()
+        self.check_internal(message, 0, &mut paths);
+
+        paths.contains(&(message.len() as u32))
     }
 
-    fn check_internal(&self, message: &str, next_rule: u32, next_index: &mut usize) -> bool {
-        if *next_index > message.len() {
-            return false;
+    fn check_internal(&self, message: &str, next_rule: u32, paths: &mut Vec<u32>) {
+        if paths.is_empty() {
+            return;
         }
         match self.rules.get(&next_rule).expect("Rule not found!") {
-            Rule::Data(data) => match message.chars().nth(*next_index) {
-                Some(next_character) if *data == next_character => {
-                    *next_index += 1;
-                    true
-                }
-                _ => false,
-            },
-            Rule::Meta(sub_rules) => sub_rules.iter().any(|rule_chain| {
-                let mut current_index = next_index.clone();
-                if rule_chain
+            Rule::Data(data) => {
+                *paths = paths
                     .iter()
-                    .all(|rule| self.check_internal(message, *rule, &mut current_index))
-                {
-                    *next_index = current_index;
-                    return true;
-                }
-                false
-            }),
+                    .filter(|index| match message.chars().nth(**index as usize) {
+                        Some(next_character) if *data == next_character => true,
+                        _ => false,
+                    })
+                    .map(|path| *path + 1)
+                    .collect()
+            }
+            Rule::Meta(sub_rules) => {
+                *paths = sub_rules
+                    .iter()
+                    .map(|rule_chain| {
+                        let mut next_paths = paths.to_vec();
+                        rule_chain
+                            .iter()
+                            .for_each(|rule| self.check_internal(message, *rule, &mut next_paths));
+
+                        next_paths
+                    })
+                    .flatten()
+                    .collect();
+            }
         }
     }
 
