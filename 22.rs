@@ -52,7 +52,18 @@ fn get_winner<'a>(decks: &'a Decks) -> (String, Cards) {
 fn get_recursive_winner(
     mut decks: Decks,
     mut previous_decks: HashMap<String, HashSet<Cards>>,
+    outer: bool,
 ) -> (String, Cards) {
+    if !outer
+        && decks["Player 1"].iter().max()
+            == decks
+                .iter()
+                .map(|(_player, deck)| deck.iter().max())
+                .max()
+                .expect("No player!")
+    {
+        return ("Player 1".to_string(), VecDeque::new());
+    }
     while decks.iter().all(|(_name, cards)| !cards.is_empty()) {
         if decks
             .iter()
@@ -108,7 +119,7 @@ fn get_recursive_winner(
         let round_winner = match recursive_round {
             true => {
                 let (submatch_winner, _deck) =
-                    get_recursive_winner(subdecks, previous_decks.clone());
+                    get_recursive_winner(subdecks, previous_decks.clone(), false);
                 if round_winner != submatch_winner {
                     round_cards = round_cards.into_iter().rev().collect();
                 }
@@ -149,6 +160,7 @@ fn solve_part_two(decks: &Decks) {
             .iter()
             .map(|(player, _cards)| (player.clone(), HashSet::new()))
             .collect(),
+        true,
     );
     let score = get_score(&cards);
 
