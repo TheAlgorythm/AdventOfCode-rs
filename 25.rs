@@ -1,21 +1,20 @@
 use std::collections::HashMap;
 
 fn pow_mod(base: u64, exponent: u64, divider: u64) -> u64 {
-    (0..exponent).fold(1_u64, |value, _| (value as u128 * base as u128 % divider as u128) as u64)
-}
-
-fn pow_mod_cached(base: u64, exponent: u64, divider: u64, mut exponent_cache: &mut HashMap<u64, u64>) -> u64 {
-    if exponent == 0 {
-        return 1;
-    } 
-    let highest_cached_exponent = exponent_cache.keys().filter(|cached_exponent| cached_exponent <= &&exponent).max();
-    let result = match highest_cached_exponent {
-        None => pow_mod(base, exponent, divider), 
-        Some(highest_cached_exponent) => (exponent_cache[highest_cached_exponent] as u128 * pow_mod_cached(base, exponent - highest_cached_exponent, divider, &mut exponent_cache) as u128 % divider as u128) as u64, 
-    };
-
-    exponent_cache.insert(exponent, result);
-    result
+    let divider = divider as u128;
+    let mut base = base as u128 % divider;
+    let mut exponent = exponent as u128;
+    let mut result = 1_u128;
+    while exponent != 0 {
+        if exponent & 1 == 1 {
+            result *= base;
+            result %= divider;
+        }
+        exponent = exponent >> 1;
+        base *= base;
+        base %= divider;
+    }
+    result as u64
 }
 
 fn discrete_logarithm(base: u64, divider: u64, result: u64) -> Option<u64> {
@@ -23,12 +22,11 @@ fn discrete_logarithm(base: u64, divider: u64, result: u64) -> Option<u64> {
     let result = result % divider;
     
     let big_step_size = (divider as f64).sqrt().ceil() as u64;
-    let mut exponent_cache = HashMap::new(); 
 
-    let big_values: HashMap<u64, u64> = (1..=big_step_size).map(|big_step| (pow_mod_cached(base, big_step * big_step_size, divider, &mut exponent_cache), big_step)).collect();
+    let big_values: HashMap<u64, u64> = (1..=big_step_size).map(|big_step| (pow_mod(base, big_step * big_step_size, divider), big_step)).collect();
     
     (1..=big_step_size)
-        .map(|baby_step| (baby_step, ((pow_mod_cached(base, baby_step, divider, &mut exponent_cache) as u128 * result as u128) % divider as u128) as u64))
+        .map(|baby_step| (baby_step, ((pow_mod(base, baby_step, divider) as u128 * result as u128) % divider as u128) as u64))
         .filter(|(_baby_step, baby_value)| big_values.contains_key(baby_value))
         .map(|(baby_step, baby_value)| big_values[&baby_value] * big_step_size - baby_step)
         .min()
