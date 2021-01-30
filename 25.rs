@@ -1,12 +1,12 @@
 use std::collections::HashMap;
 
 fn pow_mod(base: u64, exponent: u64, divider: u64) -> u64 {
-    let divider = divider as u128;
-    let mut base = base as u128 % divider;
+    let mut base = base as u128;
     let mut exponent = exponent as u128;
+    let divider = divider as u128;
     let mut result = 1_u128;
     while exponent != 0 {
-        if exponent & 1 == 1 {
+        if exponent % 2 != 0 {
             result *= base;
             result %= divider;
         }
@@ -27,8 +27,8 @@ fn discrete_logarithm(base: u64, divider: u64, result: u64) -> Option<u64> {
     
     (1..=big_step_size)
         .map(|baby_step| (baby_step, ((pow_mod(base, baby_step, divider) as u128 * result as u128) % divider as u128) as u64))
-        .filter(|(_baby_step, baby_value)| big_values.contains_key(baby_value))
-        .map(|(baby_step, baby_value)| big_values[&baby_value] * big_step_size - baby_step)
+        .filter_map(|(baby_step, baby_value)| big_values.get(&baby_value)
+            .map(|big_step| big_step * big_step_size - baby_step))
         .min()
 } 
 
