@@ -94,7 +94,7 @@ fn mutate_with_or(linear: Vec<u64>) -> Vec<u64> {
 }
 
 fn mutate_with_or_internal(last: u64, mut linear: Vec<u64>, mut results: &mut Vec<u64>) {
-    if linear.len() == 0 {
+    if linear.is_empty() {
         results.push(last);
         return;
     }

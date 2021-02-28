@@ -90,6 +90,7 @@ fn get_corner_tiles(tiles: &Tiles) -> Vec<u16> {
                 == 2
         })
         .map(|(tile_id, _tile)| *tile_id)
+        .take(4)
         .collect()
 }
 

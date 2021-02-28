@@ -65,9 +65,9 @@ fn parse_tiles(input: &str) -> Vec<Coordinate> {
     input.lines().map(Coordinate::from_directions).collect()
 }
 
-fn get_black_tiles(flipped_tiles: &Vec<Coordinate>) -> BTreeSet<Coordinate> {
+fn get_black_tiles(flipped_tiles: Vec<Coordinate>) -> BTreeSet<Coordinate> {
     flipped_tiles
-        .iter()
+        .into_iter()
         .fold(HashMap::new(), |mut tiles, coordinate| {
             tiles
                 .entry(coordinate)
@@ -77,7 +77,7 @@ fn get_black_tiles(flipped_tiles: &Vec<Coordinate>) -> BTreeSet<Coordinate> {
         })
         .into_iter()
         .filter(|(_coordinate, flips)| flips % 2 == 1)
-        .map(|(coordinate, _flips)| coordinate.clone())
+        .map(|(coordinate, _flips)| coordinate)
         .collect()
 }
 
@@ -127,7 +127,7 @@ fn main() {
 
     let flipped_tiles = parse_tiles(&input);
 
-    let black_tiles = get_black_tiles(&flipped_tiles);
+    let black_tiles = get_black_tiles(flipped_tiles);
 
     solve_part_one(&black_tiles);
     solve_part_two(&black_tiles);

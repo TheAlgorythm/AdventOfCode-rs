@@ -51,20 +51,13 @@ impl PositionState {
 }
 
 fn get_first_border(center: usize) -> usize {
-    if center == 0 {
-        return 0;
-    }
-    center - 1
+    center - (center != 0) as usize
 }
 
 fn get_width(center: usize, size: usize) -> usize {
     let mut default_width = 3;
-    if center == 0 {
-        default_width -= 1;
-    }
-    if center == size - 1 {
-        default_width -= 1;
-    }
+    default_width -= (center == 0) as usize;
+    default_width -= (center == size - 1) as usize;
     default_width
 }
 
@@ -84,7 +77,7 @@ fn count_occupied_neighbors(map: &Map, line_index: usize, column_index: usize) -
 }
 
 fn count_occupied_axis(map: &Map, line_index: usize, column_index: usize) -> u32 {
-    let directions = vec![
+    let directions = [
         (0, 1),
         (1, 1),
         (1, 0),

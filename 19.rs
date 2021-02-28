@@ -61,10 +61,7 @@ impl Rules {
             Rule::Data(data) => {
                 *paths = paths
                     .iter()
-                    .filter(|index| match message.chars().nth(**index as usize) {
-                        Some(next_character) if *data == next_character => true,
-                        _ => false,
-                    })
+                    .filter(|index| message.chars().nth(**index as usize) == Some(*data))
                     .map(|path| *path + 1)
                     .collect()
             }
@@ -83,6 +80,41 @@ impl Rules {
                     .unique()
                     .collect();
             }
+        }
+    }
+
+    pub fn check_non_recursive(&self, message: &str) -> bool {
+        let mut starting_index = 0;
+
+        self.check_non_recursive_internal(message, 0, &mut starting_index)
+            && starting_index == message.len()
+    }
+
+    fn check_non_recursive_internal(
+        &self,
+        message: &str,
+        next_rule: u32,
+        next_index: &mut usize,
+    ) -> bool {
+        if *next_index > message.len() {
+            return false;
+        }
+        match self.rules.get(&next_rule).expect("Rule not found!") {
+            Rule::Data(data) => {
+                let is_valid = message.chars().nth(*next_index) == Some(*data);
+                *next_index += 1 * is_valid as usize;
+                is_valid
+            }
+            Rule::Meta(sub_rules) => sub_rules.iter().any(|rule_chain| {
+                let mut current_index = next_index.clone();
+                if rule_chain.iter().all(|rule| {
+                    self.check_non_recursive_internal(message, *rule, &mut current_index)
+                }) {
+                    *next_index = current_index;
+                    return true;
+                }
+                false
+            }),
         }
     }
 
@@ -123,7 +155,7 @@ fn parse_reg_tex(input: &str) -> (Rules, Vec<&str>) {
 fn solve_part_one(rules: &Rules, messages: &Vec<&str>) {
     let valid_messages = messages
         .iter()
-        .filter(|message| rules.check(message))
+        .filter(|message| rules.check_non_recursive(message))
         .count();
     println!("{} messages completely match rule 0.", valid_messages);
 }

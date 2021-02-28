@@ -23,10 +23,7 @@ fn get_nth_number(starting_values: &Vec<u32>, nth: usize) -> u32 {
             Some(last_occuring_index) => index as u32 - last_occuring_index,
             None => 0,
         };
-        last_values
-            .entry(last_value)
-            .and_modify(|num| *num = index as u32)
-            .or_insert(index as u32);
+        last_values.insert(last_value, index as u32);
         last_value = current_value;
     });
     last_value
