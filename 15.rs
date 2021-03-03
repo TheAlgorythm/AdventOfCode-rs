@@ -71,7 +71,6 @@ fn get_nth_number(starting_values: &Vec<u32>, nth: usize) -> u32 {
         last_values.set(last_value, index as u32);
         last_value = current_value as usize;
     });
-    println!("{} hash-entrys", last_values.cold_map.len());
     last_value as u32
 }
 
