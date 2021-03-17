@@ -6,7 +6,7 @@ fn parse_pass_batch(input: &str) -> Vec<HashMap<&str, &str>> {
         .map(|pass| {
             pass.split(char::is_whitespace)
                 .fold(HashMap::new(), |mut map, entry| {
-                    let mut key_value = entry.splitn(2, ":");
+                    let mut key_value = entry.splitn(2, ':');
                     map.insert(
                         key_value.next().expect("No key!"),
                         key_value.next().expect("No value!"),

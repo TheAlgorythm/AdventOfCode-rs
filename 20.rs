@@ -60,7 +60,7 @@ fn parse_tiles(input: &str) -> Tiles {
     input
         .split("\n\n")
         .map(|tile_block| {
-            let tile_elements: Vec<&str> = tile_block.splitn(2, "\n").collect();
+            let tile_elements: Vec<&str> = tile_block.splitn(2, '\n').collect();
             let tile_id = tile_elements[0]
                 .chars()
                 .skip(5)

@@ -15,20 +15,20 @@ impl FromStr for Rule {
     type Err = ParseIntError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        if s.contains("\"") {
+        if s.contains('\"') {
             return Ok(Rule::Data(
                 s.trim()
-                    .replace("\"", "")
+                    .replace('\"', "")
                     .chars()
                     .next()
                     .expect("There is no Data!"),
             ));
         } else {
             return Ok(Rule::Meta(
-                s.split("|")
+                s.split('|')
                     .map(|or_group| {
                         or_group
-                            .split(" ")
+                            .split(' ')
                             .filter(|id| !id.is_empty())
                             .map(|id| id.parse::<u32>())
                             .collect::<Result<_, ParseIntError>>()

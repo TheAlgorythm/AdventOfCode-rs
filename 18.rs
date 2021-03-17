@@ -172,8 +172,8 @@ impl From<VecDeque<&str>> for Expression {
 
 fn parse_expressions(input: &str) -> Vec<Expression> {
     input
-        .replace("(", "( ")
-        .replace(")", " )")
+        .replace('(', "( ")
+        .replace(')', " )")
         .lines()
         .map(|line| Expression::from(line.split(' ').collect::<VecDeque<&str>>()))
         .collect()

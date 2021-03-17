@@ -22,16 +22,19 @@ impl PositionState {
         }
     }
 
-    pub fn calculate_new(
+    pub fn calculate_new<'a>(
         &self,
-        occupied_count: u32,
+        count_occupied: &'a dyn Fn(&Map, usize, usize) -> u32,
+        map: &Map,
+        line_index: usize,
+        column_index: usize,
         disallowed_occupied: u32,
         stabilized: &mut bool,
     ) -> Self {
         match self {
             PositionState::Floor => PositionState::Floor,
             PositionState::Empty => {
-                if occupied_count == 0 {
+                if (count_occupied)(map, line_index, column_index) == 0 {
                     *stabilized = false;
                     PositionState::Occupied
                 } else {
@@ -39,7 +42,7 @@ impl PositionState {
                 }
             }
             PositionState::Occupied => {
-                if occupied_count >= disallowed_occupied {
+                if (count_occupied)(map, line_index, column_index) >= disallowed_occupied {
                     *stabilized = false;
                     PositionState::Empty
                 } else {
@@ -77,7 +80,7 @@ fn count_occupied_neighbors(map: &Map, line_index: usize, column_index: usize) -
 }
 
 fn count_occupied_axis(map: &Map, line_index: usize, column_index: usize) -> u32 {
-    let directions = [
+    static DIRECTIONS: [(isize, isize); 8] = [
         (0, 1),
         (1, 1),
         (1, 0),
@@ -87,7 +90,7 @@ fn count_occupied_axis(map: &Map, line_index: usize, column_index: usize) -> u32
         (-1, 0),
         (-1, 1),
     ];
-    directions
+    DIRECTIONS
         .iter()
         .map(|vector| get_occupied_axis(&map, line_index, column_index, *vector) as u32)
         .sum()
@@ -164,7 +167,10 @@ impl<'a> BehaviourEngine<'a> {
                     .enumerate()
                     .map(|(column_index, state)| {
                         state.calculate_new(
-                            (self.count_occupied)(&self.map, line_index, column_index),
+                            self.count_occupied,
+                            &self.map,
+                            line_index,
+                            column_index,
                             self.disallowed_occupied,
                             &mut self.stabilized,
                         )

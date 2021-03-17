@@ -7,7 +7,7 @@ fn parse_decks(input: &str) -> Decks {
     input
         .split("\n\n")
         .map(|deck| {
-            let deck_elements: Vec<&str> = deck.splitn(2, "\n").collect();
+            let deck_elements: Vec<&str> = deck.splitn(2, '\n').collect();
             (
                 deck_elements[0][0..deck_elements[0].len() - 1].to_string(),
                 deck_elements[1]
