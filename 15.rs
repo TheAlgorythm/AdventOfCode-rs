@@ -36,7 +36,9 @@ where
 
     fn get(&self, key: &usize) -> Option<V> {
         if *key < STATIC_SIZE {
-            return self.hot_table[*key];
+            unsafe {
+                return *self.hot_table.get_unchecked(*key);
+            }
         } else {
             return self.cold_map.get(key).map(|value| *value);
         }
@@ -44,7 +46,9 @@ where
 
     fn set(&mut self, key: usize, value: V) {
         if key < STATIC_SIZE {
-            self.hot_table[key] = Some(value);
+            unsafe {
+                *self.hot_table.get_unchecked_mut(key) = Some(value);
+            }
         } else {
             self.cold_map.insert(key, value);
         }
