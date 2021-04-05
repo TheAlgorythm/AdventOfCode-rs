@@ -1,45 +1,76 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::str::FromStr;
 
 #[derive(Debug)]
 struct Tile {
     content: Vec<Vec<bool>>,
-    borders: Vec<Vec<bool>>,
+    borders: [u16; 4],
+    adjacent_borders: HashSet<u16>,
 }
 
 impl Tile {
     fn new(content: Vec<Vec<bool>>) -> Self {
-        let mut borders = Vec::new();
-        borders.push(content.first().expect("No upper border!").to_vec());
-        borders.push(content.last().expect("No lower border!").to_vec());
-        borders.push(
-            content
+        let upper_borders = border_to_ids(content.first().expect("No upper border!"));
+        let lower_borders = border_to_ids(content.last().expect("No lower border!"));
+        let left_borders = {
+            let id = content
                 .iter()
                 .map(|line| line.first().expect("No left border!").clone())
-                .collect(),
-        );
-        borders.push(
-            content
+                .enumerate()
+                .fold(0, |acc, (index, val)| acc | ((val as u16) << index));
+            (id, id.reverse_bits() >> 6)
+        };
+        let right_borders = {
+            let id = content
                 .iter()
                 .map(|line| line.last().expect("No right border!").clone())
-                .collect(),
-        );
+                .enumerate()
+                .fold(0, |acc, (index, val)| acc | ((val as u16) << index));
+            (id, id.reverse_bits() >> 6)
+        };
 
-        Tile { content, borders }
+        let borders = [
+            upper_borders.0,
+            lower_borders.0,
+            left_borders.0,
+            right_borders.0,
+        ];
+        let mut adjacent_borders = HashSet::with_capacity(8);
+        adjacent_borders.insert(upper_borders.0);
+        adjacent_borders.insert(lower_borders.0);
+        adjacent_borders.insert(left_borders.0);
+        adjacent_borders.insert(right_borders.0);
+        adjacent_borders.insert(upper_borders.1);
+        adjacent_borders.insert(lower_borders.1);
+        adjacent_borders.insert(left_borders.1);
+        adjacent_borders.insert(right_borders.1);
+
+        Tile {
+            content,
+            borders,
+            adjacent_borders,
+        }
     }
 
-    pub fn get_borders(&self) -> Vec<Vec<bool>> {
+    pub fn get_borders(&self) -> Vec<u16> {
         self.borders.to_vec()
     }
 
     pub fn is_adjacent(&self, other: &Self) -> bool {
-        other.get_borders().into_iter().any(|other_border| {
-            self.borders.contains(&other_border)
-                || self
-                    .borders
-                    .contains(&other_border.into_iter().rev().collect())
-        })
+        other
+            .get_borders()
+            .into_iter()
+            .any(|other_border| self.adjacent_borders.contains(&other_border))
     }
+}
+
+fn border_to_ids(border: &Vec<bool>) -> (u16, u16) {
+    let id = border
+        .iter()
+        .enumerate()
+        .fold(0, |acc, (index, val)| acc | ((*val as u16) << index));
+
+    (id, id.reverse_bits() >> 6)
 }
 
 impl FromStr for Tile {
