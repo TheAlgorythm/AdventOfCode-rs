@@ -1,5 +1,3 @@
-#![feature(min_const_generics)]
-
 use std::collections::HashMap;
 
 fn parse_num_list(input: &str) -> Vec<u32> {
@@ -40,7 +38,7 @@ where
                 return *self.hot_table.get_unchecked(*key);
             }
         } else {
-            return self.cold_map.get(key).map(|value| *value);
+            return self.cold_map.get(key).copied();
         }
     }
 
@@ -95,9 +93,16 @@ fn main() {
     let input = "18,8,0,5,4,1,20";
 
     let starting_values = parse_num_list(&input);
+    let starting_values_cloned = starting_values.clone();
 
+    let part_two = std::thread::Builder::new()
+        .name("Part 2".to_string())
+        .stack_size(34816 * 1024)
+        .spawn(move || solve_part_two(&starting_values_cloned))
+        .expect("Part 2 couldn't be spawned!");
     solve_part_one(&starting_values);
-    solve_part_two(&starting_values);
+
+    part_two.join().expect("Part 2 had a problem!");
 }
 
 #[cfg(test)]
@@ -106,12 +111,19 @@ mod tests {
 
     #[test]
     fn part1_examples() {
-        assert_eq!(get_nth_number(&parse_num_list(&"0,3,6"), 2020), 436);
-        assert_eq!(get_nth_number(&parse_num_list(&"1,3,2"), 2020), 1);
-        assert_eq!(get_nth_number(&parse_num_list(&"2,1,3"), 2020), 10);
-        assert_eq!(get_nth_number(&parse_num_list(&"1,2,3"), 2020), 27);
-        assert_eq!(get_nth_number(&parse_num_list(&"2,3,1"), 2020), 78);
-        assert_eq!(get_nth_number(&parse_num_list(&"3,2,1"), 2020), 438);
-        assert_eq!(get_nth_number(&parse_num_list(&"3,1,2"), 2020), 1836);
+        std::thread::Builder::new()
+            .stack_size(34816 * 1024)
+            .spawn(move || {
+                assert_eq!(get_nth_number(&parse_num_list(&"0,3,6"), 2020), 436);
+                assert_eq!(get_nth_number(&parse_num_list(&"1,3,2"), 2020), 1);
+                assert_eq!(get_nth_number(&parse_num_list(&"2,1,3"), 2020), 10);
+                assert_eq!(get_nth_number(&parse_num_list(&"1,2,3"), 2020), 27);
+                assert_eq!(get_nth_number(&parse_num_list(&"2,3,1"), 2020), 78);
+                assert_eq!(get_nth_number(&parse_num_list(&"3,2,1"), 2020), 438);
+                assert_eq!(get_nth_number(&parse_num_list(&"3,1,2"), 2020), 1836);
+            })
+            .unwrap()
+            .join()
+            .unwrap();
     }
 }
