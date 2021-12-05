@@ -1,6 +1,6 @@
 use std::collections::BTreeSet;
 
-fn solve_part_one(values: &Vec<u32>, inverses: &BTreeSet<u32>) {
+fn solve_part_one(values: &[u32], inverses: &BTreeSet<u32>) {
     match values.iter().find(|&&val| inverses.contains(&val)) {
         None => println!("Nothing found!"),
         Some(inverse_val) => {
@@ -11,7 +11,7 @@ fn solve_part_one(values: &Vec<u32>, inverses: &BTreeSet<u32>) {
     }
 }
 
-fn solve_part_two(values: &Vec<u32>, inverses: &BTreeSet<u32>) {
+fn solve_part_two(values: &[u32], inverses: &BTreeSet<u32>) {
     match values
         .iter()
         .map(|val| vec![val].into_iter().cycle().zip(values.iter()))

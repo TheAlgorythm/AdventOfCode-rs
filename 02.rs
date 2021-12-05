@@ -54,7 +54,7 @@ impl FromStr for PasswordPolicy {
 
         let second_constraint = occurrences[1].parse::<usize>()?;
 
-        let search_character: char = match elements[1].chars().nth(0) {
+        let search_character: char = match elements[1].chars().next() {
             Some(character) => character,
             None => return Err(ParsePolicyError::NoSearchCharacter),
         };

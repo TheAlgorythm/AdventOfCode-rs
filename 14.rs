@@ -93,17 +93,17 @@ fn mutate_with_or(linear: Vec<u64>) -> Vec<u64> {
     results
 }
 
-fn mutate_with_or_internal(last: u64, mut linear: Vec<u64>, mut results: &mut Vec<u64>) {
+fn mutate_with_or_internal(last: u64, mut linear: Vec<u64>, results: &mut Vec<u64>) {
     if linear.is_empty() {
         results.push(last);
         return;
     }
     let current = linear.pop().expect("Empty linear!");
-    mutate_with_or_internal(last, linear.to_vec(), &mut results);
-    mutate_with_or_internal(last | current, linear, &mut results);
+    mutate_with_or_internal(last, linear.to_vec(), results);
+    mutate_with_or_internal(last | current, linear, results);
 }
 
-fn memory_sum(transactions: &Vec<Transaction>) -> u64 {
+fn memory_sum(transactions: &[Transaction]) -> u64 {
     let mut mask = BitMask::new(0, 0);
     let mut memory: BTreeMap<u64, u64> = BTreeMap::new();
     transactions
@@ -121,12 +121,12 @@ fn memory_sum(transactions: &Vec<Transaction>) -> u64 {
     memory.iter().map(|(_address, value)| *value).sum()
 }
 
-fn solve_part_one(transactions: &Vec<Transaction>) {
-    let mem_sum = memory_sum(&transactions);
+fn solve_part_one(transactions: &[Transaction]) {
+    let mem_sum = memory_sum(transactions);
     println!("The memory residue summed up is {}.", mem_sum);
 }
 
-fn memory_sum_with_mad(transactions: &Vec<Transaction>) -> u64 {
+fn memory_sum_with_mad(transactions: &[Transaction]) -> u64 {
     let mut mask = BitMask::new(0, 0);
     let mut memory: BTreeMap<u64, u64> = BTreeMap::new();
     transactions
@@ -139,16 +139,16 @@ fn memory_sum_with_mad(transactions: &Vec<Transaction>) -> u64 {
                     .for_each(|physical_address| {
                         memory
                             .entry(*physical_address)
-                            .and_modify(|val| *val = value.clone())
-                            .or_insert(value.clone());
+                            .and_modify(|val| *val = *value)
+                            .or_insert(*value);
                     });
             }
         });
     memory.iter().map(|(_address, value)| *value).sum()
 }
 
-fn solve_part_two(transactions: &Vec<Transaction>) {
-    let mem_sum = memory_sum_with_mad(&transactions);
+fn solve_part_two(transactions: &[Transaction]) {
+    let mem_sum = memory_sum_with_mad(transactions);
     println!(
         "The memory residue in memory address decoder mode summed up is {}.",
         mem_sum
@@ -158,7 +158,7 @@ fn solve_part_two(transactions: &Vec<Transaction>) {
 fn main() {
     let input = include_str!("14_data.txt");
 
-    let transactions = parse_mask_mem(&input);
+    let transactions = parse_mask_mem(input);
 
     solve_part_one(&transactions);
     solve_part_two(&transactions);

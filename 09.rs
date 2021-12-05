@@ -6,7 +6,7 @@ fn parse_encrypted(input: &str) -> Vec<u64> {
         .expect("Parsing failed!")
 }
 
-fn get_first_invalid(encrypted: &Vec<u64>) -> Option<(usize, u64)> {
+fn get_first_invalid(encrypted: &[u64]) -> Option<(usize, u64)> {
     let preamble_size = 25;
     for (step, num) in encrypted.iter().enumerate().skip(preamble_size) {
         let leading_numbers = &encrypted[step - preamble_size..step];
@@ -31,7 +31,7 @@ fn solve_part_one(first_invalid: &Option<(usize, u64)>) {
     }
 }
 
-fn find_weakness(encrypted: &Vec<u64>, invalid: u64) -> Option<u64> {
+fn find_weakness(encrypted: &[u64], invalid: u64) -> Option<u64> {
     let mut sequence: std::collections::VecDeque<u64> = std::collections::VecDeque::new();
     for num in encrypted.iter() {
         sequence.push_back(*num);
@@ -50,7 +50,7 @@ fn find_weakness(encrypted: &Vec<u64>, invalid: u64) -> Option<u64> {
     None
 }
 
-fn solve_part_two(encrypted: &Vec<u64>, first_invalid: &Option<(usize, u64)>) {
+fn solve_part_two(encrypted: &[u64], first_invalid: &Option<(usize, u64)>) {
     let first_invalid = match first_invalid {
         Some((_position, invalid_number)) => *invalid_number,
         None => {
@@ -58,7 +58,7 @@ fn solve_part_two(encrypted: &Vec<u64>, first_invalid: &Option<(usize, u64)>) {
             return;
         }
     };
-    match find_weakness(&encrypted, first_invalid) {
+    match find_weakness(encrypted, first_invalid) {
         Some(weakness) => println!("The weakness is {}.", weakness),
         None => println!("There is no weakness."),
     }
@@ -67,7 +67,7 @@ fn solve_part_two(encrypted: &Vec<u64>, first_invalid: &Option<(usize, u64)>) {
 fn main() {
     let input = include_str!("09_data.enc");
 
-    let encrypted = parse_encrypted(&input);
+    let encrypted = parse_encrypted(input);
 
     let first_invalid = get_first_invalid(&encrypted);
 

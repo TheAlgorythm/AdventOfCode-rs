@@ -19,7 +19,7 @@ fn parse_decks(input: &str) -> Decks {
         .collect()
 }
 
-fn get_winner<'a>(decks: &'a Decks) -> (String, Cards) {
+fn get_winner(decks: &Decks) -> (String, Cards) {
     let mut decks = decks.clone();
     while decks.iter().all(|(_name, cards)| !cards.is_empty()) {
         let (round_winner, mut round_cards) = decks.iter_mut().fold(
@@ -31,10 +31,10 @@ fn get_winner<'a>(decks: &'a Decks) -> (String, Cards) {
                     .any(|round_card| *round_card > players_round_card)
                 {
                     round_cards.push_back(players_round_card);
-                    return (round_winner, round_cards);
+                    (round_winner, round_cards)
                 } else {
                     round_cards.push_front(players_round_card);
-                    return (player.to_string(), round_cards);
+                    (player.to_string(), round_cards)
                 }
             },
         );
@@ -91,7 +91,7 @@ fn get_recursive_winner(
                     players_deck
                         .iter()
                         .take(players_round_card as usize)
-                        .map(|card| card.clone())
+                        .cloned()
                         .collect(),
                 );
                 if round_cards
@@ -99,20 +99,20 @@ fn get_recursive_winner(
                     .any(|round_card| *round_card > players_round_card)
                 {
                     round_cards.push_back(players_round_card);
-                    return (
+                    (
                         recursive_round && (players_round_card <= players_deck.len() as u32),
                         round_winner,
                         round_cards,
                         subdecks,
-                    );
+                    )
                 } else {
                     round_cards.push_front(players_round_card);
-                    return (
+                    (
                         recursive_round && (players_round_card <= players_deck.len() as u32),
                         player.to_string(),
                         round_cards,
                         subdecks,
-                    );
+                    )
                 }
             },
         );
@@ -147,7 +147,7 @@ fn get_score(cards: &Cards) -> u32 {
 }
 
 fn solve_part_one(decks: &Decks) {
-    let (winner, cards) = get_winner(&decks);
+    let (winner, cards) = get_winner(decks);
     let score = get_score(&cards);
 
     println!("{} achieved a score of {}.", winner, score);
@@ -173,7 +173,7 @@ fn solve_part_two(decks: &Decks) {
 fn main() {
     let input = include_str!("22_data.txt");
 
-    let decks = parse_decks(&input);
+    let decks = parse_decks(input);
 
     solve_part_one(&decks);
     solve_part_two(&decks);

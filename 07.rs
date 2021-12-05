@@ -31,7 +31,7 @@ fn parse_reverse_rules(input: &str) -> ReverseTree {
                             .replace(" bag", ""),
                     )
                     .and_modify(|parents| parents.push(parent.clone()))
-                    .or_insert(vec![parent.clone()]);
+                    .or_insert_with(|| vec![parent.clone()]);
             });
         rules
     })
@@ -68,27 +68,23 @@ fn parse_rules(input: &str) -> Tree {
                 rules
                     .entry(parent.clone())
                     .and_modify(|children| children.push((child_quantity, child_name.clone())))
-                    .or_insert(vec![(child_quantity, child_name.clone())]);
+                    .or_insert_with(|| vec![(child_quantity, child_name.clone())]);
             });
         rules
     })
 }
 
-fn count_distinct_outer_layers(
-    rules: &ReverseTree,
-    pattern: &String,
-    mut outers: &mut Vec<String>,
-) {
-    rules.get(pattern).map(|parents| {
+fn count_distinct_outer_layers(rules: &ReverseTree, pattern: &str, outers: &mut Vec<String>) {
+    if let Some(parents) = rules.get(pattern) {
         parents.iter().for_each(|parent| {
             outers.push(parent.to_string());
-            count_distinct_outer_layers(&rules, &parent, &mut outers)
+            count_distinct_outer_layers(rules, parent, outers)
         });
-    });
+    }
 }
 
 fn solve_part_one(input: &str) {
-    let rules = parse_reverse_rules(&input);
+    let rules = parse_reverse_rules(input);
 
     let mut shiny_gold_possibilities = Vec::new();
     count_distinct_outer_layers(
@@ -102,18 +98,19 @@ fn solve_part_one(input: &str) {
     );
 }
 
-fn count_inner_bags(rules: &Tree, pattern: &String) -> u32 {
-    match rules.get(pattern) {
-        None => 0,
-        Some(rule) => rule
-            .iter()
-            .map(|(quantity, name)| quantity + (quantity * count_inner_bags(&rules, name)))
-            .sum(),
-    }
+fn count_inner_bags(rules: &Tree, pattern: &str) -> u32 {
+    rules
+        .get(pattern)
+        .map(|rule| {
+            rule.iter()
+                .map(|(quantity, name)| quantity + (quantity * count_inner_bags(rules, name)))
+                .sum()
+        })
+        .unwrap_or(0)
 }
 
 fn solve_part_two(input: &str) {
-    let rules = parse_rules(&input);
+    let rules = parse_rules(input);
     let inner_bags = count_inner_bags(&rules, &"shiny gold".to_string());
     println!("The shiny gold bag has to contain {} bags.", inner_bags);
 }
@@ -121,6 +118,6 @@ fn solve_part_two(input: &str) {
 fn main() {
     let input = include_str!("07_data.rules");
 
-    solve_part_one(&input);
-    solve_part_two(&input);
+    solve_part_one(input);
+    solve_part_two(input);
 }

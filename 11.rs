@@ -1,4 +1,5 @@
 type Map = Vec<Vec<PositionState>>;
+type MapSlice = [Vec<PositionState>];
 
 #[derive(Clone, Debug)]
 enum PositionState {
@@ -9,23 +10,17 @@ enum PositionState {
 
 impl PositionState {
     pub fn is_occupied(&self) -> bool {
-        match self {
-            PositionState::Occupied => true,
-            _ => false,
-        }
+        matches!(self, PositionState::Occupied)
     }
 
     pub fn is_seat(&self) -> bool {
-        match self {
-            PositionState::Floor => false,
-            _ => true,
-        }
+        !matches!(self, PositionState::Floor)
     }
 
     pub fn calculate_new<'a>(
         &self,
-        count_occupied: &'a dyn Fn(&Map, usize, usize) -> u32,
-        map: &Map,
+        count_occupied: &'a dyn Fn(&MapSlice, usize, usize) -> u32,
+        map: &MapSlice,
         line_index: usize,
         column_index: usize,
         disallowed_occupied: u32,
@@ -64,7 +59,7 @@ fn get_width(center: usize, size: usize) -> usize {
     default_width
 }
 
-fn count_occupied_neighbors(map: &Map, line_index: usize, column_index: usize) -> u32 {
+fn count_occupied_neighbors(map: &MapSlice, line_index: usize, column_index: usize) -> u32 {
     map.iter()
         .skip(get_first_border(line_index))
         .take(get_width(line_index, map.len()))
@@ -79,7 +74,7 @@ fn count_occupied_neighbors(map: &Map, line_index: usize, column_index: usize) -
         - (map[line_index][column_index].is_occupied() as u32)
 }
 
-fn count_occupied_axis(map: &Map, line_index: usize, column_index: usize) -> u32 {
+fn count_occupied_axis(map: &MapSlice, line_index: usize, column_index: usize) -> u32 {
     static DIRECTIONS: [(isize, isize); 8] = [
         (0, 1),
         (1, 1),
@@ -92,36 +87,34 @@ fn count_occupied_axis(map: &Map, line_index: usize, column_index: usize) -> u32
     ];
     DIRECTIONS
         .iter()
-        .map(|vector| get_occupied_axis(&map, line_index, column_index, *vector) as u32)
+        .map(|vector| get_occupied_axis(map, line_index, column_index, *vector) as u32)
         .sum()
 }
 
 fn get_occupied_axis(
-    map: &Map,
+    map: &MapSlice,
     line_index: usize,
     column_index: usize,
     vector: (isize, isize),
 ) -> bool {
-    match (1..)
-        .map(|n| {
-            (
-                line_index as isize + (vector.0 * n),
-                column_index as isize + (vector.1 * n),
-            )
-        })
-        .take_while(|(line_vector, column_vector)| {
-            (0..map.len() as isize).contains(line_vector)
-                && (0..map[*line_vector as usize].len() as isize).contains(column_vector)
-        })
-        .map(|(line_vector, column_vector)| {
-            map[line_vector as usize][column_vector as usize].clone()
-        })
-        .filter(|state| state.is_seat())
-        .next()
-    {
-        None | Some(PositionState::Empty) => false,
-        _ => true,
-    }
+    !matches!(
+        (1..)
+            .map(|n| {
+                (
+                    line_index as isize + (vector.0 * n),
+                    column_index as isize + (vector.1 * n),
+                )
+            })
+            .take_while(|(line_vector, column_vector)| {
+                (0..map.len() as isize).contains(line_vector)
+                    && (0..map[*line_vector as usize].len() as isize).contains(column_vector)
+            })
+            .map(|(line_vector, column_vector)| {
+                map[line_vector as usize][column_vector as usize].clone()
+            })
+            .find(|state| state.is_seat()),
+        None | Some(PositionState::Empty)
+    )
 }
 impl From<char> for PositionState {
     fn from(character: char) -> Self {
@@ -143,7 +136,7 @@ fn parse_map(input: &str) -> Map {
 
 struct BehaviourEngine<'a> {
     map: Map,
-    count_occupied: &'a dyn Fn(&Map, usize, usize) -> u32,
+    count_occupied: &'a dyn Fn(&MapSlice, usize, usize) -> u32,
     disallowed_occupied: u32,
     stabilized: bool,
 }
@@ -188,7 +181,7 @@ impl<'a> BehaviourEngine<'a> {
     }
 }
 
-fn solve_part_one(map: &Map) {
+fn solve_part_one(map: &MapSlice) {
     let mut engine = BehaviourEngine {
         map: map.to_vec(),
         count_occupied: &count_occupied_neighbors,
@@ -203,9 +196,9 @@ fn solve_part_one(map: &Map) {
     );
 }
 
-fn solve_part_two(map: &Map) {
+fn solve_part_two(map: Map) {
     let mut engine = BehaviourEngine {
-        map: map.to_vec(),
+        map,
         count_occupied: &count_occupied_axis,
         disallowed_occupied: 5,
         stabilized: false,
@@ -221,8 +214,8 @@ fn solve_part_two(map: &Map) {
 fn main() {
     let input = include_str!("11_data.map");
 
-    let map = parse_map(&input);
+    let map = parse_map(input);
 
     solve_part_one(&map);
-    solve_part_two(&map);
+    solve_part_two(map);
 }

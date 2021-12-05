@@ -53,7 +53,7 @@ where
     }
 }
 
-fn get_nth_number(starting_values: &Vec<u32>, nth: usize) -> u32 {
+fn get_nth_number(starting_values: &[u32], nth: usize) -> u32 {
     let mut last_values: SplittedMap<u32, { 1024 * 2048 }> =
         SplittedMap::with_capacity(2039983 * (nth > { 1024 * 2048 }) as usize);
     starting_values
@@ -76,13 +76,13 @@ fn get_nth_number(starting_values: &Vec<u32>, nth: usize) -> u32 {
     last_value as u32
 }
 
-fn solve_part_one(starting_values: &Vec<u32>) {
-    let last_spoken_number = get_nth_number(&starting_values, 2020);
+fn solve_part_one(starting_values: &[u32]) {
+    let last_spoken_number = get_nth_number(starting_values, 2020);
     println!("{} will be the 2020th number spoken.", last_spoken_number);
 }
 
-fn solve_part_two(starting_values: &Vec<u32>) {
-    let last_spoken_number = get_nth_number(&starting_values, 30000000);
+fn solve_part_two(starting_values: &[u32]) {
+    let last_spoken_number = get_nth_number(starting_values, 30000000);
     println!(
         "{} will be the 30000000th number spoken.",
         last_spoken_number
@@ -92,7 +92,7 @@ fn solve_part_two(starting_values: &Vec<u32>) {
 fn main() {
     let input = "18,8,0,5,4,1,20";
 
-    let starting_values = parse_num_list(&input);
+    let starting_values = parse_num_list(input);
     let starting_values_cloned = starting_values.clone();
 
     let part_two = std::thread::Builder::new()

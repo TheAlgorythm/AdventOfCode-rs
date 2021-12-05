@@ -22,10 +22,7 @@ enum Instruction {
 
 impl Instruction {
     fn is_control_flow(&self) -> bool {
-        match self {
-            Instruction::Accumulate(_) => false,
-            _ => true,
-        }
+        !matches!(self, Instruction::Accumulate(_))
     }
 
     fn negate_control_flow(&mut self) {
@@ -64,7 +61,7 @@ enum RuntimeError {
     SegmentationFault(usize),
 }
 
-fn run(instructions: &Vec<Instruction>) -> Result<i64, RuntimeError> {
+fn run(instructions: &[Instruction]) -> Result<i64, RuntimeError> {
     let return_instruction = instructions.len();
     let mut instruction_stack: Vec<usize> = Vec::new();
     let mut accumulator = 0_i64;
@@ -107,8 +104,8 @@ fn solve_part_one(res: &Result<i64, RuntimeError>) {
 }
 
 fn backtrace_infinite_loop(
-    instructions: &Vec<Instruction>,
-    stacktrace: &Vec<usize>,
+    instructions: &[Instruction],
+    stacktrace: &[usize],
 ) -> Result<(usize, i64), ()> {
     for instruction_index in stacktrace.iter().rev() {
         if !instructions[*instruction_index].is_control_flow() {
@@ -123,7 +120,7 @@ fn backtrace_infinite_loop(
     Err(())
 }
 
-fn solve_part_two(res: &Result<i64, RuntimeError>, instructions: &Vec<Instruction>) {
+fn solve_part_two(res: &Result<i64, RuntimeError>, instructions: &[Instruction]) {
     let stacktrace = match res {
         Err(RuntimeError::InfiniteLoop(stacktrace, _last_accumulator)) => stacktrace,
         _ => {
@@ -131,7 +128,7 @@ fn solve_part_two(res: &Result<i64, RuntimeError>, instructions: &Vec<Instructio
             return;
         }
     };
-    match backtrace_infinite_loop(&instructions, &stacktrace) {
+    match backtrace_infinite_loop(instructions, stacktrace) {
         Ok((negated_instruction, accumulator_result)) => println!(
             "Negating instruction {}, there is the result {}.",
             negated_instruction, accumulator_result
@@ -143,7 +140,7 @@ fn solve_part_two(res: &Result<i64, RuntimeError>, instructions: &Vec<Instructio
 fn main() -> Result<(), ParseInstructionError> {
     let input = include_str!("08_data.asm");
 
-    let instructions = parse_asm(&input)?;
+    let instructions = parse_asm(input)?;
 
     let res = run(&instructions);
 

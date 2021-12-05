@@ -73,14 +73,14 @@ fn parse_seats(input: &str) -> Vec<SeatPosition> {
     seats
 }
 
-fn solve_part_one(seats: &Vec<SeatPosition>) {
+fn solve_part_one(seats: &[SeatPosition]) {
     let highest_seat = seats.last().expect("No highest seat found!");
     println!("The highest seat ID is {}.", highest_seat.get_id());
 }
 
-fn solve_part_two(seats: &Vec<SeatPosition>) {
+fn solve_part_two(seats: &[SeatPosition]) {
     let my_seat = seats
-        .into_iter()
+        .iter()
         .scan(0_u32, |last_id, current| {
             let distance = current.get_id() - *last_id;
             *last_id = current.get_id();
@@ -101,7 +101,7 @@ fn solve_part_two(seats: &Vec<SeatPosition>) {
 fn main() {
     let input = include_str!("05_data.list");
 
-    let seats = parse_seats(&input);
+    let seats = parse_seats(input);
 
     solve_part_one(&seats);
     solve_part_two(&seats);

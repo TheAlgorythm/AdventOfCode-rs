@@ -102,11 +102,11 @@ impl Rules {
         match self.rules.get(&next_rule).expect("Rule not found!") {
             Rule::Data(data) => {
                 let is_valid = message.chars().nth(*next_index) == Some(*data);
-                *next_index += 1 * is_valid as usize;
+                *next_index += is_valid as usize;
                 is_valid
             }
             Rule::Meta(sub_rules) => sub_rules.iter().any(|rule_chain| {
-                let mut current_index = next_index.clone();
+                let mut current_index = *next_index;
                 if rule_chain.iter().all(|rule| {
                     self.check_non_recursive_internal(message, *rule, &mut current_index)
                 }) {
@@ -152,7 +152,7 @@ fn parse_reg_tex(input: &str) -> (Rules, Vec<&str>) {
     )
 }
 
-fn solve_part_one(rules: &Rules, messages: &Vec<&str>) {
+fn solve_part_one(rules: &Rules, messages: &[&str]) {
     let valid_messages = messages
         .iter()
         .filter(|message| rules.check_non_recursive(message))
@@ -160,7 +160,7 @@ fn solve_part_one(rules: &Rules, messages: &Vec<&str>) {
     println!("{} messages completely match rule 0.", valid_messages);
 }
 
-fn solve_part_two(rules: &mut Rules, messages: &Vec<&str>) {
+fn solve_part_two(rules: &mut Rules, messages: &[&str]) {
     rules.patch_rules_part_2();
     let valid_messages = messages
         .iter()
@@ -175,7 +175,7 @@ fn solve_part_two(rules: &mut Rules, messages: &Vec<&str>) {
 fn main() {
     let input = include_str!("19_data.txt");
 
-    let (mut rules, messages) = parse_reg_tex(&input);
+    let (mut rules, messages) = parse_reg_tex(input);
 
     solve_part_one(&rules, &messages);
     solve_part_two(&mut rules, &messages);

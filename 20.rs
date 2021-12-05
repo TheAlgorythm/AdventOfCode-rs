@@ -15,7 +15,7 @@ impl Tile {
         let left_borders = {
             let id = content
                 .iter()
-                .map(|line| line.first().expect("No left border!").clone())
+                .map(|line| *line.first().expect("No left border!"))
                 .enumerate()
                 .fold(0, |acc, (index, val)| acc | ((val as u16) << index));
             (id, id.reverse_bits() >> 6)
@@ -23,7 +23,7 @@ impl Tile {
         let right_borders = {
             let id = content
                 .iter()
-                .map(|line| line.last().expect("No right border!").clone())
+                .map(|line| *line.last().expect("No right border!"))
                 .enumerate()
                 .fold(0, |acc, (index, val)| acc | ((val as u16) << index));
             (id, id.reverse_bits() >> 6)
@@ -64,7 +64,7 @@ impl Tile {
     }
 }
 
-fn border_to_ids(border: &Vec<bool>) -> (u16, u16) {
+fn border_to_ids(border: &[bool]) -> (u16, u16) {
     let id = border
         .iter()
         .enumerate()
@@ -126,7 +126,7 @@ fn get_corner_tiles(tiles: &Tiles) -> Vec<u16> {
 }
 
 fn solve_part_one(tiles: &Tiles) {
-    let corner_product: u64 = get_corner_tiles(&tiles)
+    let corner_product: u64 = get_corner_tiles(tiles)
         .into_iter()
         .map(|tile_id| tile_id as u64)
         .product();
@@ -142,7 +142,7 @@ fn solve_part_two() {}
 fn main() {
     let input = include_str!("20_data.raw");
 
-    let tiles = parse_tiles(&input);
+    let tiles = parse_tiles(input);
 
     solve_part_one(&tiles);
     solve_part_two();

@@ -22,7 +22,7 @@ impl Position {
                     .map(|y_offset| {
                         (-1..=1)
                             .map(|z_offset| {
-                                (-1 * is_4_dimensional as i64..=1 * is_4_dimensional as i64)
+                                (-1 * is_4_dimensional as i64..=is_4_dimensional as i64)
                                     .map(|w_offset| {
                                         Position::new(
                                             self.x + x_offset,
@@ -50,7 +50,7 @@ impl Position {
                     .map(|y_offset| {
                         (-1..=1)
                             .map(|z_offset| {
-                                (-1 * is_4_dimensional as i64..=1 * is_4_dimensional as i64)
+                                (-1 * is_4_dimensional as i64..=is_4_dimensional as i64)
                                     .filter(|w_offset| {
                                         x_offset != 0
                                             || y_offset != 0
@@ -101,11 +101,7 @@ fn cycle(active_cubes: &BTreeSet<Position>, is_4_dimensional: bool) -> BTreeSet<
         .filter(|possible_cube| {
             let is_active = active_cubes.contains(possible_cube);
             let neighbors = possible_cube.get_neighbors(active_cubes, is_4_dimensional);
-            match (is_active, neighbors) {
-                (true, 2..=3) => true,
-                (false, 3) => true,
-                _ => false,
-            }
+            matches!((is_active, neighbors), (true, 2..=3) | (false, 3))
         })
         .collect()
 }
@@ -115,7 +111,7 @@ fn cycles(
     nth: usize,
     is_4_dimensional: bool,
 ) -> BTreeSet<Position> {
-    let mut current_active = cycle(&active_cubes, is_4_dimensional);
+    let mut current_active = cycle(active_cubes, is_4_dimensional);
     for _ in 1..nth {
         current_active = cycle(&current_active, is_4_dimensional);
     }
@@ -141,7 +137,7 @@ fn solve_part_two(active_cubes: &BTreeSet<Position>) {
 fn main() {
     let input = include_str!("17_data.map");
 
-    let active_cubes = parse_map(&input);
+    let active_cubes = parse_map(input);
 
     solve_part_one(&active_cubes);
     solve_part_two(&active_cubes);

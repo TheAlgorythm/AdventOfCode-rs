@@ -28,7 +28,7 @@ fn check_range(passport: &HashMap<&str, &str>, field: &str, from: i32, to: i32) 
     (from..=to).contains(
         &passport
             .get(field)
-            .expect(format!("No {}-field!", field).as_str())
+            .unwrap_or_else(|| panic!("No {}-field!", field))
             .parse::<i32>()
             .unwrap_or(0),
     )
@@ -62,10 +62,10 @@ fn check_hair_color(passport: &HashMap<&str, &str>) -> bool {
 }
 
 fn check_eye_color(passport: &HashMap<&str, &str>) -> bool {
-    match *passport.get("ecl").expect("No ecl-field!") {
-        "amb" | "blu" | "brn" | "gry" | "grn" | "hzl" | "oth" => true,
-        _ => false,
-    }
+    matches!(
+        *passport.get("ecl").expect("No ecl-field!"),
+        "amb" | "blu" | "brn" | "gry" | "grn" | "hzl" | "oth"
+    )
 }
 
 fn check_pass_id(passport: &HashMap<&str, &str>) -> bool {
@@ -77,28 +77,28 @@ fn check_pass_id(passport: &HashMap<&str, &str>) -> bool {
 }
 
 fn check_valid_values(passport: &HashMap<&str, &str>) -> bool {
-    check_range(&passport, "byr", 1920, 2002)
-        && check_range(&passport, "iyr", 2010, 2020)
-        && check_range(&passport, "eyr", 2020, 2030)
-        && check_height(&passport)
-        && check_hair_color(&passport)
-        && check_eye_color(&passport)
-        && check_pass_id(&passport)
+    check_range(passport, "byr", 1920, 2002)
+        && check_range(passport, "iyr", 2010, 2020)
+        && check_range(passport, "eyr", 2020, 2030)
+        && check_height(passport)
+        && check_hair_color(passport)
+        && check_eye_color(passport)
+        && check_pass_id(passport)
 }
 
-fn solve_part_one(passports: &Vec<HashMap<&str, &str>>) {
+fn solve_part_one(passports: &[HashMap<&str, &str>]) {
     let valid_count = passports
         .iter()
-        .filter(|passport| check_valid_keys(&passport))
+        .filter(|passport| check_valid_keys(passport))
         .count();
     println!("There are {} key-valid passports.", valid_count);
 }
 
-fn solve_part_two(passports: &Vec<HashMap<&str, &str>>) {
+fn solve_part_two(passports: &[HashMap<&str, &str>]) {
     let valid_count = passports
         .iter()
-        .filter(|passport| check_valid_keys(&passport))
-        .filter(|passport| check_valid_values(&passport))
+        .filter(|passport| check_valid_keys(passport))
+        .filter(|passport| check_valid_values(passport))
         .count();
     println!("There are {} valid passports.", valid_count);
 }
@@ -106,7 +106,7 @@ fn solve_part_two(passports: &Vec<HashMap<&str, &str>>) {
 fn main() {
     let input = include_str!("04_data.batch");
 
-    let passports = parse_pass_batch(&input);
+    let passports = parse_pass_batch(input);
 
     solve_part_one(&passports);
     solve_part_two(&passports);

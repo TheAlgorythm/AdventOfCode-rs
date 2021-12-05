@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 type Rules = HashMap<String, Vec<(i32, i32)>>;
 type Tickets = Vec<Vec<i32>>;
+type TicketsSlice = [Vec<i32>];
 
 fn parse_ticket_notes(input: &str) -> (Rules, Tickets) {
     let elements: Vec<&str> = input.splitn(2, "\n\n").collect();
@@ -45,11 +46,11 @@ fn parse_ticket_notes(input: &str) -> (Rules, Tickets) {
     (rules, tickets)
 }
 
-fn value_in_ranges(value: &i32, ranges: &Vec<&(i32, i32)>) -> bool {
+fn value_in_ranges(value: &i32, ranges: &[&(i32, i32)]) -> bool {
     ranges.iter().any(|(min, max)| (min..=max).contains(&value))
 }
 
-fn scanning_error_rate(rules: &Rules, tickets: &Tickets) -> i32 {
+fn scanning_error_rate(rules: &Rules, tickets: &TicketsSlice) -> i32 {
     let ranges: Vec<&(i32, i32)> = rules.values().flatten().collect();
     tickets
         .iter()
@@ -62,12 +63,12 @@ fn scanning_error_rate(rules: &Rules, tickets: &Tickets) -> i32 {
         .sum()
 }
 
-fn solve_part_one(rules: &Rules, tickets: &Tickets) {
-    let sum_invalid = scanning_error_rate(&rules, &tickets);
+fn solve_part_one(rules: &Rules, tickets: &TicketsSlice) {
+    let sum_invalid = scanning_error_rate(rules, tickets);
     println!("The scanning error rate is {}.", sum_invalid);
 }
 
-fn get_labels(rules: &Rules, tickets: &Tickets) -> Vec<String> {
+fn get_labels(rules: &Rules, tickets: &TicketsSlice) -> Vec<String> {
     let ranges: Vec<&(i32, i32)> = rules.values().flatten().collect();
     let valid_tickets: Vec<&Vec<i32>> = tickets
         .iter()
@@ -84,7 +85,7 @@ fn get_labels(rules: &Rules, tickets: &Tickets) -> Vec<String> {
                 valid_tickets.iter().all(|ticket| {
                     value_in_ranges(
                         &(**ticket)[attribute_index],
-                        &attribute_ranges.iter().collect(),
+                        &attribute_ranges.iter().collect::<Vec<_>>(),
                     )
                 })
             })
@@ -125,8 +126,8 @@ fn get_labels(rules: &Rules, tickets: &Tickets) -> Vec<String> {
     attribute_names
 }
 
-fn solve_part_two(rules: &Rules, tickets: &Tickets) {
-    let labels = get_labels(&rules, &tickets);
+fn solve_part_two(rules: &Rules, tickets: &TicketsSlice) {
+    let labels = get_labels(rules, tickets);
     let depature_product: i64 = labels
         .iter()
         .enumerate()
@@ -139,7 +140,7 @@ fn solve_part_two(rules: &Rules, tickets: &Tickets) {
 fn main() {
     let input = include_str!("16_data.txt");
 
-    let (rules, tickets) = parse_ticket_notes(&input);
+    let (rules, tickets) = parse_ticket_notes(input);
 
     solve_part_one(&rules, &tickets);
     solve_part_two(&rules, &tickets);

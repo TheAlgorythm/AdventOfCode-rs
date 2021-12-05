@@ -13,7 +13,7 @@ pub fn mod_inverse(x: i64, n: i64) -> i64 {
 }
 
 /// http://rosettacode.org/wiki/Chinese_remainder_theorem#Rust
-pub fn chinese_remainder(pairs: &Vec<(i64, i64)>) -> i64 {
+pub fn chinese_remainder(pairs: &[(i64, i64)]) -> i64 {
     let product = pairs.iter().map(|(r, _)| r).product::<i64>();
 
     pairs

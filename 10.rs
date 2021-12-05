@@ -11,7 +11,7 @@ fn parse_adapters(input: &str) -> Vec<u64> {
     adapters
 }
 
-fn solve_part_one(adapters: &Vec<u64>) {
+fn solve_part_one(adapters: &[u64]) {
     let diff_count = adapters
         .iter()
         .scan(0, |previous, &current| {
@@ -50,15 +50,15 @@ fn count_mutations(adapters: &[u64], last_value: u64, cache: &mut BTreeMap<u64, 
     mutations
 }
 
-fn solve_part_two(adapters: &Vec<u64>) {
-    let mutations = count_mutations(adapters.as_slice(), 0, &mut BTreeMap::new());
+fn solve_part_two(adapters: &[u64]) {
+    let mutations = count_mutations(adapters, 0, &mut BTreeMap::new());
     println!("There are {} valid mutations.", mutations);
 }
 
 fn main() {
     let input = include_str!("10_data.list");
 
-    let adapters = parse_adapters(&input);
+    let adapters = parse_adapters(input);
 
     solve_part_one(&adapters);
     solve_part_two(&adapters);

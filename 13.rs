@@ -14,18 +14,18 @@ fn parse_plan(input: &str) -> (u32, Vec<(usize, u32)>) {
     )
 }
 
-fn get_next_bus(arrival: u32, bus_ids: &Vec<u32>) -> (u32, u32) {
+fn get_next_bus(arrival: u32, bus_ids: &[u32]) -> (u32, u32) {
     bus_ids
         .iter()
-        .map(|id| (id.clone(), id - (arrival % id)))
-        .min_by_key(|(_id, waiting_time)| waiting_time.clone())
+        .map(|id| (*id, id - (arrival % id)))
+        .min_by_key(|(_id, waiting_time)| *waiting_time)
         .expect("No next bus found!")
 }
 
-fn solve_part_one(arrival: u32, bus_ids: &Vec<(usize, u32)>) {
+fn solve_part_one(arrival: u32, bus_ids: &[(usize, u32)]) {
     let (bus_id, waiting_time) = get_next_bus(
         arrival,
-        &bus_ids.iter().map(|(_index, id)| id.clone()).collect(),
+        &bus_ids.iter().map(|(_index, id)| *id).collect::<Vec<_>>(),
     );
     println!(
         "For the next bus {} you have to wait {} minutes, which is a waiting-product of {}.",
@@ -35,7 +35,7 @@ fn solve_part_one(arrival: u32, bus_ids: &Vec<(usize, u32)>) {
     );
 }
 
-fn get_bus_row(bus_ids: &Vec<(usize, u32)>) -> i64 {
+fn get_bus_row(bus_ids: &[(usize, u32)]) -> i64 {
     chinese_remainder(
         &bus_ids
             .iter()
@@ -44,15 +44,15 @@ fn get_bus_row(bus_ids: &Vec<(usize, u32)>) -> i64 {
     )
 }
 
-fn solve_part_two(bus_ids: &Vec<(usize, u32)>) {
-    let first_time = get_bus_row(&bus_ids);
+fn solve_part_two(bus_ids: &[(usize, u32)]) {
+    let first_time = get_bus_row(bus_ids);
     println!("The first bus row is at timestamp {}.", first_time);
 }
 
 fn main() {
     let input = include_str!("13_data.txt");
 
-    let (arrival, ids) = parse_plan(&input);
+    let (arrival, ids) = parse_plan(input);
 
     solve_part_one(arrival, &ids);
     solve_part_two(&ids);

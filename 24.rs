@@ -97,17 +97,13 @@ fn cycle(black_tiles: &BTreeSet<Coordinate>) -> BTreeSet<Coordinate> {
         .filter(|possible_black| {
             let is_black = black_tiles.contains(possible_black);
             let neighbors = possible_black.get_neighbors(black_tiles);
-            match (is_black, neighbors) {
-                (true, 1..=2) => true,
-                (false, 2) => true,
-                _ => false,
-            }
+            matches!((is_black, neighbors), (true, 1..=2) | (false, 2))
         })
         .collect()
 }
 
 fn cycles(black_tiles: &BTreeSet<Coordinate>, nth: usize) -> BTreeSet<Coordinate> {
-    let mut current_black = cycle(&black_tiles);
+    let mut current_black = cycle(black_tiles);
     for _ in 1..nth {
         current_black = cycle(&current_black);
     }
@@ -125,7 +121,7 @@ fn solve_part_two(black_tiles: &BTreeSet<Coordinate>) {
 fn main() {
     let input = include_str!("24_data.txt");
 
-    let flipped_tiles = parse_tiles(&input);
+    let flipped_tiles = parse_tiles(input);
 
     let black_tiles = get_black_tiles(flipped_tiles);
 
