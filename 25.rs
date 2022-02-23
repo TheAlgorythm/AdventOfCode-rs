@@ -42,7 +42,8 @@ fn discrete_logarithm(base: u64, divider: u64, result: u64) -> Option<u64> {
                 .get(&baby_value)
                 .map(|big_step| big_step * big_step_size - baby_step)
         })
-        .min()
+        .filter(|exponent| *exponent < divider)
+        .next()
 }
 
 /// Break Diffie-Hellman
