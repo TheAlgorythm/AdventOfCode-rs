@@ -64,3 +64,28 @@ fn solve_part_one() {
 fn main() {
     solve_part_one();
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn part1_examples() {
+        let device_base = 7;
+        let divider = 20201227;
+
+        let card_exponent =
+            discrete_logarithm(device_base, divider, 13233401).expect("Card invalid!");
+        let door_exponent =
+            discrete_logarithm(device_base, divider, 6552760).expect("Door invalid!");
+
+        assert_eq!(card_exponent, 16679169);
+        assert_eq!(door_exponent, 7725933);
+    }
+
+    #[test]
+    fn simple_examples() {
+        assert_eq!(discrete_logarithm(2, 5, 3).unwrap(), 3);
+        assert!(discrete_logarithm(3, 11, 7).is_none());
+    }
+}
